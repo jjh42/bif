@@ -27,6 +27,7 @@ Note: All polls are a single character (No trailing CR).
 	If the slave has no response, it returns the next higher letter in the alphabet.
 	The slave ID is the UPPER CASE version of its poll letter.
 
+
 IO PRIVATE MESSAGES:
 
 After a 'p' poll to the IO supervisor, if it has nothing to say to the master, but wishes to send a message to the IO slave, it may send the following message:
@@ -34,6 +35,11 @@ After a 'p' poll to the IO supervisor, if it has nothing to say to the master, b
 
 After a 'v' poll to the IO slave, if it has nothing to say to the master, but wishes to send a message to the IO supervisor, it may send the following message:
 <................CR	when the contents of the message are ignored by the master (until the CR is received).
+
+<AnxxCR		Advise analog voltage where:
+			n = Number (0..??)
+			xx = Value (12-bits)
+
 
 GENERAL MESSAGES:
 
@@ -135,8 +141,8 @@ ILfr	Set LED mode where f (front LED) and r (rear LED) are the hex digits:
 		5	Fast flash
 	There is no response to the LED mode command.
 
-IP7524		Enter stand-by mode (power off rest of robot)
-IK1396		Kill entire system
+IP00		Enter stand-by mode (power off rest of robot)
+IK99		Kill entire system
 
 POLL RESPONSES:
 
@@ -167,10 +173,10 @@ SQ              Test all of external flash. Return 'Q' if it is
 SD              Debug SPI mode.
 SFxx            Set flags.
                         Bit 0 - Debug bit
-SGsfffftttt            Generate tone where:
+SGsfffftt            Generate tone where:
 		s = shape (0=silent, 1=square wave, 2=triangle, 3=sine, etc...)
-		ffff = frequency in Hz
-		tttt = time in msec
+		ffff = frequency in Hz (20...2000)
+		tt = time in tenths of seconds (1...30) (0.1secs...3.0secs)
 
 POLL RESPONSES:
 

@@ -1,4 +1,4 @@
-2002-09-17  Jonathan Hunt  <jhunt@jaja>
+2002-09-17  Jonathan Hunt  <jhuntnz@users.sf.net>
 	* config.sub: Added. Was lost en-route to Sf.
 	* config.guess: Added. Was lost en-route to Sf.
 	* input.conf: Change hep-at and hen-em to hep_at
@@ -11,23 +11,28 @@
 	* makedump.c: Removed use of sizeof(flash_buffer)
 	  and replaced with SIZE_OF_FLASH.
 	* program.c: Likewise.
+	
 2001-09-26  Jonathan Hunt  <jhuntnz@users.sf.net>
 	* loaddump.c: Made playing sounds faster.
 	* main.c: Likewise.
 	* playitem.c: Likewise.
 	* makedump.c: Likewise
+	
 2001-09-25  Jonathan Hunt  <jhuntnz@users.sf.net>
 	* main.h: Added the ability to play sounds with hbit going to
 	  stdout as well. Used by the master.
 	* loaddump.c: Likewise.
 	* playitem.c: Likewise.
+	
 2001-09-25  Jonathan Hunt  <jhuntnz@users.sf.net>
 	* program.c: Changed timing to make it slower. It was having
 	  errors. Now programs with no failures.
+	  
 2001-09-23  Jonathan Hunt  <jhuntnz@users.sf.net>
 	* program.c: Got it working with new master. Changed timing
 	  to make it faster.
 	* parse.c: Added rabbit junk at beginning out outputed files.
+	
 2001-09-15  Jonathan Hunt  <jhuntnz@users.sf.net>
 	* input.conf: Changed ! to _ and @ to P so that it makes
 	  C parsable defines.
@@ -36,16 +41,20 @@
 	* parse.*: Added new property construct. Added prop_inclusivetable.
 	* yacc.y: Likewise
 	* lex.l: Likewise
+	
 2001-09-13  Jonathan Hunt  <jhuntnz@users.sf.net>
 	* makedump.c: Converted to output Rabbit compatible
 	  header files.
 	* parse.c: Likewise
+	
 2001-08-14  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
 	* Added lex.l, yacc.y, parse.*
 	* Input.conf is now a lot more complicated than before.
 	  Generates language tables too.	  
+	  
 2001-08-08  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
 	* bugfix: Checking problem.
+	
 2001-07-12  Jonathan Hunt  <jhuntnz@users.sf.net>
 	* Added more checking. Added more sounds.
 	
@@ -55,23 +64,30 @@
 	  
 2001-06-21  Jonathan Hunt  <jhuntnz@users.sf.net>
 	* Bug that put #ifdef instead of #ifndef in header file.
+	
 2001-06-13  Jonathan Hunt  <jhuntnz@users.sf.net>
 	* Made it output a sounds.inc (Atmel AVR Assembler 
 	  compatible).
 	* Made it start the index from 1 instead of 0.
+	
 2001-05-07  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
 	* Changed the sounds.h to make hex so that it's easier
 	  for debugging.
 	* input.conf: Bug with sorry.
+	
 2001-05-06  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
 	* Added a uhbit that is the unsigned high bit.
+	
 2001-05-05  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
 	* Added a hbit that dumps the high bit of the sound.
+	
 2001-05-03  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
 	* Added a way to test the dump file by -p[index] and it
 	  will output a raw and uncompressed version. Used it to
 	  validate the dump file.
+	  
 2001-04-25  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
 	* bugfix: Things were stored in the index wrong.
+	
 2001-04-14  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
 	* Programmed successfully!

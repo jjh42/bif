@@ -32,14 +32,11 @@
 #define TRUE 1
 #define FALSE 0
 
-//#undef bool
-//#undef BOOL
-//typedef unsigned char bool;
-//typedef bool BOOL;
-
 #ifndef NULL
 #define NULL (void*)0
 #endif
+
+#define nonauto static
 
 typedef unsigned char U8;
 typedef signed char S8;
@@ -48,7 +45,8 @@ typedef signed int S16;
 typedef signed long S32;
 typedef unsigned long U32;
 
-extern void assert(bool val);
+#define assert(x) assert_handler(x);
+extern void assert_handler(bool val);
 
 #define strncasecmp	strncmpi
 #define strcasecmp	strcmpi

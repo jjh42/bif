@@ -23,8 +23,8 @@ void matigsalug_c () { }
 *	Adapted by: Robert Hunt
 *	Created: September 2001
 *
-*	Mod. Number: 12
-*	Last Modified: 14 October 2001
+*	Mod. Number: 17
+*	Last Modified: 9 November 2001
 *	Modified By: Robert Hunt
 *
 * Current problems:
@@ -57,6 +57,8 @@ void matigsalug_c () { }
 #include <string.h>
 
 #include "compat.h"
+
+#ifdef INCLUDE_MATIGSALUG
 #include "sounds.h"
 #include "speak.h"
 #include "soundcontrol.h"
@@ -86,6 +88,7 @@ XSTRING(LetterToPhoneme)
 	"n", "OX", "p", "q", "r", "s", "t", "UU", "v", "w", "x", "y", "z"
 	};
 
+#if 0
 // The following are still in English -- not finished yet ....... xxxxxx temp
 XSTRING(Cardinals)
 	{
@@ -118,6 +121,7 @@ XSTRING(MOrd_twenties)
 	"twEHntIYEHTH ","THERtIYEHTH ",	"fOWrtIYEHTH ",	"fIHftIYEHTH ",
 	"sIHkstIYEHTH ","sEHvEHntIYEHTH ","EYtIYEHTH ",	"nAYntIYEHTH "
 	} ;
+#endif
 
 XSTRING(MAscii)
 	{
@@ -130,7 +134,7 @@ XSTRING(MAscii)
 "EHnd tEHkst blAAk ","kAEnsEHl ","EHnd AXv mEHsIHj ","sUWbstIHtUWt ",
 "EHskEYp ","fAYEHld sIYpERAEtER ","grUWp sIYpERAEtER ","rIYkAOrd sIYpERAEtER ",
 "yUWnIHt sIYpERAEtER ","spEYs ","EHksklAEmEYSHAXn mAArk ","dAHbl kwOWt ",
-"nUWmbER sAYn ","dAAlER sAYn ","pERsEHnt ","AEmpERsAEnd ","kwOWt ",
+"nUWmbER sAYn ","dAAlER sAYn ","pERsEHntUU ","AEmpERsAEnd ","kwOWt ",
 "OWpEHn pEHrEHn ","klOWz pEHrEHn ","AEstEHrIHsk ","plAHs ","kAAmmAX ",
 "mIHnAHs ","pIYrIYAAd ","slAESH ",
 
@@ -195,7 +199,10 @@ const_xmem_ptr_t MatchPrerecordedMSWord (char *word) // Returns 0 if no match
 	}
 
 	// If we get here, we didn't get a match
-	//printf (" No prerecorded MS <%s> ", lcWord);
+#ifndef TARGET_RABBIT
+	if (strlen(lcWord) > 3)
+		printf (" No prerecorded MS word <%s> ", lcWord);
+#endif
 	return 0;
 }
 /* End of MatchPrerecordedMSWord */
@@ -240,12 +247,15 @@ const_xmem_ptr_t MatchPrerecordedMSSyllable (char syllable[]) // Returns 0 if no
 	}
 
 	// If we get here, we didn't get a match
+#ifndef TARGET_RABBIT
 	printf (" No prerecorded syllable <%s> ", lcSyllable);
+#endif
 	return 0;
 }
 /* End of MatchPrerecordedMSSyllable */
 
 
+#if 0
 static void OutMSWordString (char *WordString, char *PhonemeString)
 {
 	const_xmem_ptr_t Result;
@@ -257,11 +267,12 @@ static void OutMSWordString (char *WordString, char *PhonemeString)
 		OutString (" ");
 	}
 	else {
-                xmem2root(tmp, Result, sizeof(tmp));
+            xmem2root(tmp, Result, sizeof(tmp));
 		OutRecordedWordString (tmp);
 	}
 }
 /* End of OutMSWordString */
+#endif
 
 
 BOOL isMSconsonant (char chr)
@@ -288,6 +299,127 @@ void SpellMSWord (char *word)
 /* End of SpellMSWord */
 
 
+void XlateMSSyllable (char syllable[]) /* Note: syllable is upper case */
+{
+	int SourceIndex;
+	char PhonemeString[10];
+	const_xmem_ptr_t Result;
+
+//printf ("\nXlateMSSyllable(%s) ", syllable);	
+	Result = MatchPrerecordedMSSyllable (syllable);
+	if (Result == 0) {// no match so need to output by phonemes
+		SourceIndex = 0;
+		PhonemeString[0] = '\0';
+		while (syllable[SourceIndex] != '\0')
+			{
+			if (syllable[SourceIndex] == GLOTTAL)
+				strcat (PhonemeString, SPX GlottalPause SPX);
+			else if (syllable[SourceIndex] == NG)
+				strcat (PhonemeString, "NG");
+			else // strcat (PhonemeString, LetterToPhoneme + (syllable[SourceIndex]-'A'));
+				xmem2root(PhonemeString + strlen(PhonemeString), XACCESS(LetterToPhoneme, (syllable[SourceIndex]-'A')), sizeof(PhonemeString) - strlen(PhonemeString));
+			++SourceIndex;
+			}
+//printf (" PS=<%s> ", PhonemeString);			
+		OutString (PhonemeString);
+		}
+	else { // We matched a syllable -- the xmem address of the sound number is in Result
+		xmem2root(PhonemeString, Result, 2);
+		QueueSound (PhonemeString[0]);
+		}
+}
+/* End of XlateMSSyllable */
+
+
+static void XlateMSWord (char word[]) /* Note: word is upper case and has a leading and a trailing blank */
+{
+	int index;	/* Current position in word */
+	const_xmem_ptr_t Result;
+	BOOL HaveVowel;
+	unsigned int NumSyChars;
+	char TempWord[MAX_MS_WORD_LENGTH+1];
+
+	//printf ("\nXlateMSWord(%s) ", word);	
+	assert (strlen(word)<=MAX_MS_WORD_LENGTH);
+
+	/* Check for prerecorded words */
+	strcpy (TempWord, word+1); /* Copy and remove the leading blank */
+	TempWord[strlen(TempWord)-1] = '\0'; /* Remove the trailing blank */
+	Result = MatchPrerecordedMSWord (TempWord);
+	if (Result != 0) { // We matched one
+		xmem2root(TempWord, Result, sizeof(TempWord));
+		OutRecordedWordString (TempWord); // Output the recorded sound(s)
+		return;
+	}	
+	else { // we didn't match a prerecorded word
+		// Convert to syllables and then translate them
+		index = 1;	/* Skip the initial blank */
+		HaveVowel = FALSE;
+		NumSyChars = 0;
+		do	{
+			// Precede leading vowels with a glottal stop
+			if (NumSyChars==0 && isvowel(word[index])) {
+				TempWord[0] = GLOTTAL;
+				NumSyChars = 1;
+				}
+
+			// Convert n g to ng
+			if (word[index]=='N' && word[index+1]=='G')
+				word[++index] = NG;
+
+			if (word[index]=='-' && isMSconsonant(word[index-1]) && isMSconsonant(word[index+1]))
+				++index; // ignore hyphen between two consonants
+			else if (!HaveVowel && isvowel(word[index])) {
+				TempWord[NumSyChars++] = word[index++];
+				HaveVowel = TRUE;
+				}
+			else if (HaveVowel) {
+				if (isMSconsonant(word[index]) && !isvowel(word[index+1]))
+					TempWord[NumSyChars++] = word[index++];
+				if (TempWord[NumSyChars-1] == '-') // Convert hyphen to specific glottal
+					TempWord[NumSyChars-1] = GLOTTAL;
+				TempWord[NumSyChars] = '\0';
+				XlateMSSyllable (TempWord);
+				// Prepare for next syllable
+				HaveVowel = FALSE;
+				NumSyChars = 0;
+				}
+			else {// accept this letter
+				TempWord[NumSyChars++] = word[index++];
+				if (TempWord[NumSyChars-1] == '-') // Convert hyphen to specific glottal
+					TempWord[NumSyChars-1] = GLOTTAL;
+				}
+			} while (word[index] != ' ');
+		if (NumSyChars != 0) {
+			TempWord[NumSyChars] = '\0';
+			XlateMSSyllable (TempWord);
+		}
+	}
+	QueueSound (WordPause[0]);
+}
+/* End of XlateMSWord */
+
+
+/* Converts word to a form usable by XlateMSWord */
+static void SayMSWord (char word [])
+{
+char TempStr[MAX_MS_WORD_LENGTH+1];
+int si;
+
+TempStr[0] = ' ';
+for (si=0;; ++si)
+	{
+	TempStr[si+1] = (char)toupper(word[si]);
+	if (word[si] == '\0')
+		break;
+	}
+TempStr[si+1] = ' ';
+TempStr[si+2] = '\0';
+XlateMSWord (TempStr);
+}
+/* End of SayMSWord */
+
+
 /*
 **              Integer to Readable ASCII Conversion Routine.
 **
@@ -306,15 +438,15 @@ void SpellMSWord (char *word)
 */
 void SayMSCardinal (long value)
 {
-        char tmp[32];
-
 	if (value < 0)
 		{
-		OutMSWordString ("minus", "mAYnAHs");
+		//OutMSWordString ("minus", "mAYnAHs");
+		SayMSWord ("minus");
 		value = (-value);
 		if (value < 0)	/* Overflow!  -32768 */
 			{
-			OutMSWordString ("infinity", "IHnfIHnIHtIY");
+			//OutMSWordString ("infinity", "IHnfIHnIHtIY");
+			SayMSWord ("infiniti");
 			return;
 			}
 		}
@@ -322,23 +454,25 @@ void SayMSCardinal (long value)
 	if (value >= 1000000000L)	/* Billions */
 		{
 		SayMSCardinal (value/1000000000L);
-		OutMSWordString ("billion", "bIHlIYAXn");
+		//OutMSWordString ("billion", "bIHlIYAXn");
+		SayMSWord ("bilyun");
 		value = value % 1000000000;
 		if (value == 0)
 			return;		/* Even billion */
 		if (value < 100)	/* as in THREE BILLION AND FIVE */
-			OutMSWordString ("and", "AEnd");
+			SayMSWord ("wey");
 		}
 
 	if (value >= 1000000L)	/* Millions */
 		{
 		SayMSCardinal (value/1000000L);
-		OutMSWordString ("million", "mIHlIYAXn");
+		//OutMSWordString ("milyun", "milyun");
+		SayMSWord ("milyun");
 		value = value % 1000000L;
 		if (value == 0)
 			return;		/* Even million */
 		if (value < 100)	/* as in THREE MILLION AND FIVE */
-			OutMSWordString ("and", "AEnd");
+			SayMSWord ("wey");
 		}
 
 	/* Thousands 1000..1099 2000..99999 */
@@ -346,50 +480,52 @@ void SayMSCardinal (long value)
 	if ((value >= 1000L && value <= 1099L) || value >= 2000L)
 		{
 		SayMSCardinal (value/1000L);
-		OutMSWordString ("thousand", "THAWzAEnd");
+		//OutMSWordString ("libu", "libu");
+		SayMSWord ("libu");
 		value = value % 1000L;
 		if (value == 0)
 			return;		/* Even thousand */
 		if (value < 100)	/* as in THREE THOUSAND AND FIVE */
-			OutMSWordString ("and", "AEnd");
+			SayMSWord ("wey");
 		}
 
 	if (value >= 100L)
 		{
-#ifdef USE_PRERECORDED_WORDS
-		QueueSound (MW_zero[0] + value/100);
+		QueueSound ((U8)(MW_sabeka[0] + value/100));
 		QueueSound (WordPause[0]);
-#else		
-                xmem2root(tmp, XACCESS(Cardinals, (value / 100)), sizeof(tmp));
-		OutString (tmp);
-#endif
-		OutMSWordString ("hundred", "hAHndrEHd");
+		SayMSWord ("ne");
+		QueueSound (WordPause[0]);
+		//OutMSWordString ("gatus", "gatus");
+		SayMSWord ("gatus");
 		value = value % 100;
 		if (value == 0)
 			return;		/* Even hundred */
+		QueueSound (WordPause[0]);
 		}
 
 	if (value >= 20)
 		{
-#ifdef USE_PRERECORDED_WORDS
-		QueueSound (MW_twenty[0] + (value-20)/10);
-		QueueSound (WordPause[0]);
-#else		
-                xmem2root(tmp, XACCESS(Twenties, ((value - 20) / 10)), sizeof(tmp));
-		OutString (tmp);
-#endif
+		QueueSound ((U8)(MW_ware[0] + (value)/10));
+		SayMSWord ("ne");
+		//OutMSWordString ("pulu", "pulu");
+		SayMSWord ("pulu");
 		value = value % 10;
 		if (value == 0)
 			return;		/* Even ten */
+		SayMSWord ("wey");
 		}
 
-#ifdef USE_PRERECORDED_WORDS
-	QueueSound (MW_zero[0] + value);
+	if (value >= 10)
+		{
+		QueueSound (MW_sapulu[0]);
+		value = value % 10;
+		if (value == 0)
+			return;		/* Even ten */
+		SayMSWord ("wey");
+		}
+
+	QueueSound ((U8)(MW_ware[0] + value));
 	QueueSound (WordPause[0]);
-#else		
-        xmem2root(tmp, XACCESS(Cardinals, value), sizeof(tmp));
-        OutString (tmp);
-#endif
 	return;
 } 
 /* End of SayMSCardinal */
@@ -401,15 +537,15 @@ void SayMSCardinal (long value)
 */
 void SayMSOrdinal (long value)
 {
-        char tmp[32];
-
 	if (value < 0)
 		{
-		OutMSWordString ("minus", "mAHnAXs");
+		//OutMSWordString ("minus", "mAHnAXs");
+		SayMSWord ("minus");
 		value = (-value);
 		if (value < 0)	/* Overflow!  -32768 */
 			{
-			OutMSWordString ("inifinity", "IHnfIHnIHtIY");
+			//OutMSWordString ("infinity", "IHnfIHnIHtIY");
+			SayMSWord ("infiniti");
 			return;
 			}
 		}
@@ -420,12 +556,14 @@ void SayMSOrdinal (long value)
 		value = value % 1000000000;
 		if (value == 0)
 			{
-			OutMSWordString ("billionth", "bIHlIYAXnTH");
+			//OutMSWordString ("billionth", "bIHlIYAXnTH");
+			SayMSWord ("bilyun");
 			return;		/* Even billion */
 			}
-		OutMSWordString ("billion", "bIHlIYAXn");
+		//OutMSWordString ("billion", "bIHlIYAXn");
+		SayMSWord ("bilyun");
 		if (value < 100)	/* as in THREE BILLION AND FIVE */
-			OutMSWordString ("and", "AEnd");
+			SayMSWord ("wey");
 		}
 
 	if (value >= 1000000L)	/* Millions */
@@ -434,69 +572,63 @@ void SayMSOrdinal (long value)
 		value = value % 1000000L;
 		if (value == 0)
 			{
-			OutMSWordString ("millionth", "mIHlIYAXnTH");
+			//OutMSWordString ("millionth", "mIHlIYAXnTH");
+			SayMSWord ("milyun");
 			return;		/* Even million */
 			}
-		OutMSWordString ("million", "mIHlIYAXn");
+		//OutMSWordString ("million", "mIHlIYAXn");
+		SayMSWord ("milyun");
 		if (value < 100)	/* as in THREE MILLION AND FIVE */
-			OutMSWordString ("and", "AEnd");
+			SayMSWord ("wey");
 		}
 
 	/* Thousands 1000..1099 2000..99999 */
-	/* 1100 to 1999 is eleven-hunderd to ninteen-hunderd */
+	/* 1100 to 1999 is eleven-hundred to ninteen-hunderd */
 	if ((value >= 1000L && value <= 1099L) || value >= 2000L)
 		{
 		SayMSCardinal (value/1000L);
 		value = value % 1000L;
 		if (value == 0)
 			{
-			OutMSWordString ("thousandth", "THAWzAEndTH");
+			//OutMSWordString ("thousandth", "THAWzAEndTH");
+			SayMSWord ("libu");
 			return;		/* Even thousand */
 			}
-		OutMSWordString ("thousand", "THAWzAEnd");
+		//OutMSWordString ("thousand", "THAWzAEnd");
+		SayMSWord ("libu");
 		if (value < 100)	/* as in THREE THOUSAND AND FIVE */
-			OutMSWordString ("and", "AEnd");
+			SayMSWord ("wey");
 		}
 
 	if (value >= 100L)
 		{
-#ifdef USE_PRERECORDED_WORDS
-		QueueSound (MW_zero[0] + value/100);
+		QueueSound ((U8)(MW_ware[0] + value/100));
 		QueueSound (WordPause[0]);
-#else		
-                xmem2root(tmp, XACCESS(Cardinals, (value / 100)), sizeof(tmp));
-		OutString (tmp);
-#endif
 		value = value % 100;
 		if (value == 0)
 			{
-			OutMSWordString ("hundredth", "hAHndrEHdTH");
+			//OutMSWordString ("hundredth", "hAHndrEHdTH");
+			SayMSWord ("gatus");
 			return;		/* Even hundred */
 			}
-		OutMSWordString ("hundred", "hAHndrEHd");
+		//OutMSWordString ("gatus", "gatus");
+		SayMSWord ("gatus");
 		}
 
 	if (value >= 20)
 		{
 		if ((value%10) == 0)
 			{
-                        xmem2root(tmp, XACCESS(MOrd_twenties, ((value-20) / 10)),
-                                sizeof(tmp));
-		        OutString (tmp);
+			QueueSound ((U8)(MW_ware[0] + value/10));
+			QueueSound (WordPause[0]);
 			return;		/* Even ten */
 			}
-#ifdef USE_PRERECORDED_WORDS
-		QueueSound (MW_twenty[0] + (value-20)/10);
+		QueueSound ((U8)(MW_sapulu[0] + (value-20)/10));
 		QueueSound (WordPause[0]);
-#else		
-                xmem2root(tmp, XACCESS(Twenties, ((value - 20) / 10)), sizeof(tmp));
-		OutString (tmp);
-#endif
 		value = value % 10;
 		}
 
-        xmem2root(tmp, XACCESS(MOrdinals, (value)), sizeof(tmp));
-        OutString (tmp);
+	QueueSound ((U8)(MW_ware[0] + value/10));
 	return;
 } 
 /* End of SayMSOrdinal */
@@ -635,7 +767,7 @@ void HaveMSDollars (void)
 			return;
 			}
 
-		OutMSWordString ("and", "AAnd");
+		SayMSWord ("wey");
                 value = (MChar-'0')*10 + MChar1-'0';
 		SayMSCardinal (value);
 
@@ -705,7 +837,7 @@ void HaveMSPesos (void)
 			return;
 			}
 
-		OutMSWordString ("and", "AAnd");
+		SayMSWord ("wey");
                 value = (MChar-'0')*10 + MChar1-'0';
 		SayMSCardinal (value);
 
@@ -739,7 +871,8 @@ void HaveMSSpecial (void)
                    SayMSASCII (MChar);
 		else if (MChar == ',')
 			QueueSound (WordPause[0]); // Presumably there will also be another word pause for the space
-		else if (MChar == '.' || MChar == ':' || MChar == ';')
+								// which will make it about the right length
+		else if (MChar == '.' || MChar == ':' || MChar == ';' || MChar == '?')
 			QueueSound (SentencePause[0]);
 		else
                   SayMSASCII (MChar);
@@ -823,7 +956,8 @@ void HaveMSNumber (void)
 	/* Recognize decimal points */
         if (MChar == '.' && isdigit(MChar1))
 		{
-		OutMSWordString ("point", "pOYnt");
+		//OutMSWordString ("point", "pOYnt");
+		SayMSWord ("poyint");
                 for (NewMSChar() ; isdigit(MChar) ; NewMSChar())
 			{
                         //SayMSASCII (MChar);
@@ -844,109 +978,10 @@ void HaveMSNumber (void)
 /* End of HaveMSNumber */
 
 
-void XlateMSSyllable (char syllable[]) /* Note: syllable is upper case */
-{
-	int SourceIndex;
-	char PhonemeString[10];
-	const_xmem_ptr_t Result;
-
-//printf ("\nXlateMSSyllable(%s) ", syllable);	
-	Result = MatchPrerecordedMSSyllable (syllable);
-	if (Result == 0) {// no match so need to output by phonemes
-		SourceIndex = 0;
-		PhonemeString[0] = '\0';
-		while (syllable[SourceIndex] != '\0')
-			{
-			if (syllable[SourceIndex] == GLOTTAL)
-				strcat (PhonemeString, SPX GlottalPause SPX);
-			else if (syllable[SourceIndex] == NG)
-				strcat (PhonemeString, "NG");
-			else // strcat (PhonemeString, LetterToPhoneme + (syllable[SourceIndex]-'A'));
-				xmem2root(PhonemeString + strlen(PhonemeString), XACCESS(LetterToPhoneme, (syllable[SourceIndex]-'A')), sizeof(PhonemeString) - strlen(PhonemeString));
-			++SourceIndex;
-			}
-		OutString (PhonemeString);
-		}
-	else { // We matched a syllable -- the xmem address of the sound number is in Result
-		xmem2root(PhonemeString, Result, 2);
-		QueueSound (PhonemeString[0]);
-		}
-}
-/* End of XlateMSSyllable */
-
-
-void XlateMSWord (char word[]) /* Note: word is upper case and has a leading and a trailing blank */
-{
-	int index;	/* Current position in word */
-	const_xmem_ptr_t Result;
-	BOOL HaveVowel;
-	unsigned int NumSyChars;
-	char TempWord[MAX_MS_WORD_LENGTH+1];
-
-	//printf ("\nXlateMSWord(%s) ", word);	
-	assert (strlen(word)<=MAX_MS_WORD_LENGTH);
-
-	/* Check for prerecorded words */
-	strcpy (TempWord, word+1); /* Copy and remove the leading blank */
-	TempWord[strlen(TempWord)-1] = '\0'; /* Remove the trailing blank */
-	Result = MatchPrerecordedMSWord (TempWord);
-	if (Result != 0) { // We matched one
-		xmem2root(TempWord, Result, sizeof(TempWord));
-		OutRecordedWordString (TempWord); // Output the recorded sound(s)
-		return;
-	}	
-	else { // we didn't match a prerecorded word
-		// Convert to syllables and then translate them
-		index = 1;	/* Skip the initial blank */
-		HaveVowel = FALSE;
-		NumSyChars = 0;
-		do	{
-			// Precede leading vowels with a glottal stop
-			if (NumSyChars==0 && isvowel(word[index])) {
-				TempWord[0] = GLOTTAL;
-				NumSyChars = 1;
-				}
-
-			// Convert n g to ng
-			if (word[index]=='N' && word[index+1]=='G')
-				word[++index] = NG;
-
-			if (word[index]=='-' && isMSconsonant(word[index-1]) && isMSconsonant(word[index+1]))
-				++index; // ignore hyphen between two consonants
-			else if (!HaveVowel && isvowel(word[index])) {
-				TempWord[NumSyChars++] = word[index++];
-				HaveVowel = TRUE;
-				}
-			else if (HaveVowel) {
-				if (isMSconsonant(word[index]) && !isvowel(word[index+1]))
-					TempWord[NumSyChars++] = word[index++];
-				if (TempWord[NumSyChars-1] == '-') // Convert hyphen to specific glottal
-					TempWord[NumSyChars-1] = GLOTTAL;
-				TempWord[NumSyChars] = '\0';
-				XlateMSSyllable (TempWord);
-				// Prepare for next syllable
-				HaveVowel = FALSE;
-				NumSyChars = 0;
-				}
-			else {// accept this letter
-				TempWord[NumSyChars++] = word[index++];
-				if (TempWord[NumSyChars-1] == '-') // Convert hyphen to specific glottal
-					TempWord[NumSyChars-1] = GLOTTAL;
-				}
-			} while (word[index] != ' ');
-		if (NumSyChars != 0) {
-			TempWord[NumSyChars] = '\0';
-			XlateMSSyllable (TempWord);
-		}
-	}
-	QueueSound (WordPause[0]);
-}
-/* End of XlateMSWord */
-
-
 /* Handle abbreviations.  Text in buff was followed by '.' */
 void MSAbbrev (char buff[])
 {
+#if 0
 	if (strcmp(buff, " DR ") == 0)
 		{
 		XlateMSWord(" DOCTOR ");
@@ -977,6 +1012,7 @@ void MSAbbrev (char buff[])
 		NewMSChar();
 		}
 	else
+#endif	
 		XlateMSWord(buff);
 }
 /* End of MSAbbrev */
@@ -1042,7 +1078,7 @@ void SayMatigsalugText (BOOL Override, char *Text)
 {
 	printf ("SayMS(%u,%s)\n", Override, Text);
 	MTextPointer = Text; // Copy pointer
-	InitSoundQueue ();
+	//InitSoundQueue ();
 
 	if (Override)
 		OutOverrideChar ();
@@ -1072,6 +1108,8 @@ void SayMatigsalugText (BOOL Override, char *Text)
 	FlushSoundQueue ();
 }
 /* End of SayMatigsalugText */
+
+#endif // INCLUDE_MATIGSALUG
 
 
 /***** End of Matigsalug.c *****/

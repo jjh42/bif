@@ -38,6 +38,8 @@
 
 #define BEEP_SILENT 0 // for waveform for a pause (freq is ignored)
 #define SQUARE_WAVE 1 // for waveform
+#define TRIANGLE_WAVE 2
+#define SINE_WAVE 3
 extern void beep(U8 waveform, U16 freq, U16 time);
 extern void errorbeep ();
 

@@ -22,8 +22,8 @@ void ircontrol_c () { }
 *	Author: Robert Hunt
 *	Created: August 2001
 *
-*	Mod. Number: 33
-*	Last Modified: 16 October 2001
+*	Mod. Number: 40
+*	Last Modified: 17 November 2001
 *	Modified by: Robert Hunt
 *
 *******************************************************
@@ -171,6 +171,7 @@ void ircontrol_c () { }
 #include "commonsubs.h"
 #include "mytime.h"
 #include "computercontrol.h"
+#include "speak.h"
 
 
 /*****************************************************
@@ -201,9 +202,11 @@ static U8 IRControlStatus;
 #define IR_S_POWER 14
 #define IR_S_DEMO 15
 #define IR_S_MODE 16
-#define NUM_IR_STATES 17
+#define IR_S_SPECIAL 17
+#define IR_S_TC_MINS 18
+#define IR_S_AL_MINS 19
 
-static long LastIRStatusChangeTime; // in seconds
+static TIME LastIRStatusChangeTime; // in seconds
 #define IR_S_TIMEOUT 6 // seconds
 
 static U8 IREntryStatus;
@@ -232,10 +235,12 @@ static U8 NumQueuedEntries;
 static BOOL InQueueMode;
 
 static BOOL InIRSpecialMode; /* Used for various special modes */
-static U8 IRDisplayState;
+static U8 IRDisplayState; // Used for debugging special mode
 #define IR_DISPLAY_OFF 0
 #define IR_DISPLAY_BATT 1
 #define IR_DISPLAY_CHRG 2
+static char IRLCDString[LCD_CHARS_PER_LINE+1]; // chars + final null
+
 
 #define IR_USED_COMMAND 0xFD /* REPEAT and ERROR use FE and FF */
 #define IR_NO_COMMAND IR_USED_COMMAND /* These two can be the same */
@@ -260,6 +265,7 @@ IRLastValidCommand = IR_NO_COMMAND;
 IRControlStatus = IR_S_IDLE;
 InIRSpecialMode = FALSE;
 IRDisplayState = IR_DISPLAY_OFF;
+LastIRStatusChangeTime = getsectimer();
 
 #ifdef TARGET_RABBIT
 // IRWatchdog = VdGetFreeWd (5); // 5 * 62.5 msec = 313 msec ..... temp xxxxx
@@ -282,21 +288,22 @@ DiagnosticMode = TRUE; // for now ......... temp xxxxxxxxxxxxx
 
 void UpdateIRControl (void)
 {
-char DStr[LCD_CHARS_PER_LINE+1]; // chars + final null
-
 /* Check for a timeout */
 if ((IRControlStatus != IR_S_IDLE) && ((getsectimer() - LastIRStatusChangeTime) > IR_S_TIMEOUT))
 	{
 	LEDOff (IRStatusLED);
-	beep (SQUARE_WAVE, Beep400Hz, Beep0s1); /* Audible feedback to human */
-	beep (SQUARE_WAVE, Beep300Hz, Beep0s1);
+
+	Beep (SQUARE_WAVE, Beep400Hz, Beep0s1); /* Audible feedback to human */
+	Beep (SQUARE_WAVE, Beep300Hz, Beep0s1);
 	switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 		case MATIGSALUG:
 			SayMatigsalugText (TRUE, "Warad"); break;
+#endif
 		default: // default to English
 			SayEnglishText (TRUE, "Timed out."); break;
 		}
-	LCDDisplay (IR_SUBSYSTEM, "IR Entry timed out", TRUE);
+	LCDDisplay (IR_SUBSYSTEM, "IR timed out", TRUE);
 	IRControlStatus = IR_S_IDLE;
 	}
 
@@ -306,13 +313,13 @@ if (IRDisplayState!=IR_DISPLAY_OFF && LCDNumCharacters==0)
 	switch (IRDisplayState)
 		{
 		case IR_DISPLAY_BATT:
-			sprintf (DStr, "Bat=%u %.1fv", BatteryLevel, BatteryVoltage);
+			sprintf (IRLCDString, "Bat=%u %.1fv", BatteryLevel, BatteryVoltage);
 			break;
 		case IR_DISPLAY_CHRG:
-			sprintf (DStr, "Chrg=%u %.1fv", ChargingLevel, ChargingVoltage);
+			sprintf (IRLCDString, "Chrg=%u %.1fv", ChargingLevel, ChargingVoltage);
 			break;
 		}
-	LCDDisplay (IR_SUBSYSTEM, DStr, TRUE);
+	LCDDisplay (IR_SUBSYSTEM, IRLCDString, TRUE);
 	}
 
 #ifdef TARGET_RABBIT
@@ -360,13 +367,14 @@ static void HandleIRHelp (void)
 {
 assert (IRCommand==IR_R_HELP || IRControlStatus==IR_S_HELP);
 
-#if 0 // to make some room in memory
 // See if <Help> key pressed first
 if (IRControlStatus == IR_S_IDLE && IRCommand == IR_R_HELP)
 	{
 	switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 		case MATIGSALUG:
 			SayMatigsalugText (FALSE, "Bulig"); break;
+#endif
 		default: // default to English
 			SayEnglishText (FALSE, "Help"); break;
 		}
@@ -437,7 +445,6 @@ if (IRCommand != IR_USED_COMMAND)
 	IRControlStatus = IR_S_IDLE;
 	IRCommand = IR_USED_COMMAND;
 	}
-#endif
 }
 
 /* End of HandleIRHelp */
@@ -462,10 +469,14 @@ assert (IRCommand==IR_R_QUERY || IRControlStatus==IR_S_QUERY);
 // See if <Query> key pressed first
 if (IRControlStatus == IR_S_IDLE && IRCommand == IR_R_QUERY)
 	{
-	if (CurrentOutputLanguage == MATIGSALUG)
-		SayMatigsalugText (FALSE, "Inse");
-	else // default to English
-		SayEnglishText (FALSE, "Query");
+	switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
+		case MATIGSALUG:
+			SayMatigsalugText (FALSE, "Inse"); break;
+#endif
+		default: // default to English
+			SayEnglishText (FALSE, "Query"); break;
+		}
 	IRControlStatus = IR_S_QUERY;
 	IRCommand = IR_USED_COMMAND;
 	}
@@ -494,6 +505,7 @@ else if (IRControlStatus != IR_S_IDLE && IRControlStatus != IR_S_QUERY)
 				IRCommand = IR_USED_COMMAND;
 				break;
 
+#if 0
 			case IR_S_AUTOSTOP:
 				TellAutostopMode ();
 				IRCommand = IR_USED_COMMAND;
@@ -508,6 +520,7 @@ else if (IRControlStatus != IR_S_IDLE && IRControlStatus != IR_S_QUERY)
 				TellFrontBackMode ();
 				IRCommand = IR_USED_COMMAND;
 				break;
+#endif
 			}
 		}
 
@@ -571,6 +584,7 @@ else // See if some other key pressed after <Query>
 				IRCommand = IR_USED_COMMAND;
 				break;
 
+#if 0
 			case IR_R_AUTOSTOP:
 				TellAutostopMode ();
 				IRCommand = IR_USED_COMMAND;
@@ -595,6 +609,7 @@ else // See if some other key pressed after <Query>
 				TellFrontBackMode ();
 				IRCommand = IR_USED_COMMAND;
 				break;
+#endif
 			}
 		}
 
@@ -666,51 +681,139 @@ else // See if some other key pressed after <Query>
 
 /*****************************************************
 *
-* Function Name: HandleDebuggingKey
+* Function Name: HandleSpecialKey
 * Description: Handles a keypress from the IR remote in special mode
 * Arguments: None
 * Return Value: None
 *
 *****************************************************/
 
-static void HandleDebuggingKey (void)
-{
-assert (InIRSpecialMode);
-if (IRControlStatus == IR_S_IDLE)
-	switch (IRCommand)
-		{
-		case IR_R_POWER: // Battery level display
-			IRDisplayState = IR_DISPLAY_BATT;
-			IRCommand = IR_USED_COMMAND;
-			break;	
-		case IR_R_PLUS_MINUS: // Charge level display
-			IRDisplayState = IR_DISPLAY_CHRG;
-			IRCommand = IR_USED_COMMAND;
-			break;
-		case IR_R_OFF: // Turn off above displays
-			IRDisplayState = IR_DISPLAY_OFF;
-			LCDClear (IR_SUBSYSTEM_LINE);
-			break;
+#ifdef INCLUDE_MATIGSALUG
+XSINGLESTRING (SPM1) {"Hentew-a ka ngaran nu?"};
+XSINGLESTRING (STCM1) {"Rilu"};
+XSINGLESTRING (SALM1) {"Rilu"};
+#endif
+XSINGLESTRING (SPE1) {"What is your name?"};
+XSINGLESTRING (STCE1) {"Talking clock. Enter number of minutes"};
+XSINGLESTRING (SALE1) {"Alarm. Enter number of minutes"};
 
-		case IR_1: // Time display
-			if (LCDTimeDisplay == LCD_TIME_OFF)
-				LCDTimeDisplay = LCD_TIME_LINE_2;
-			else // turn it off		
-				LCDTimeOff (TRUE);
+static void HandleSpecialKey (void)
+{
+assert (IRControlStatus == IR_S_SPECIAL);
+#ifdef REAL_COMPILER
+printf ("\nHandleSpecialKey ");
+#endif
+
+switch (IRCommand)
+	{
+	case IR_R_SPECIAL:
+		InIRSpecialMode = (BOOL)!InIRSpecialMode;
+		IRCommand = IR_USED_COMMAND;
+		break;
+
+	// Various speak commands
+	case IR_R_FORWARD: // Greet
+		Greet ();
+		if (!InIRSpecialMode)
 			IRControlStatus = IR_S_IDLE;
-			IRCommand = IR_USED_COMMAND;
-			break;
-		case IR_2: // Date display
-			if (LCDDateDisplay == LCD_DATE_OFF)
-				LCDDateDisplay = LCD_DATE_LINE_1;
-			else // turn it off
-				LCDDateOff (TRUE);
+		IRCommand = IR_USED_COMMAND;
+		break;
+	case IR_R_STRAIGHT:
+		TellName ();
+		if (!InIRSpecialMode)
 			IRControlStatus = IR_S_IDLE;
-			IRCommand = IR_USED_COMMAND;
-			break;
-		}
+		IRCommand = IR_USED_COMMAND;
+		break;
+	case IR_R_SPEED:
+		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
+			case MATIGSALUG:
+				xSay (FALSE, SPM1); break;
+#endif
+			default: // default to English
+				xSay (FALSE, SPE1); break;
+			}
+		if (!InIRSpecialMode)
+			IRControlStatus = IR_S_IDLE;
+		IRCommand = IR_USED_COMMAND;
+		break;
+
+
+	// Various display commands
+	case IR_R_POWER: // Battery level display
+		IRDisplayState = IR_DISPLAY_BATT;
+		if (!InIRSpecialMode)
+			IRControlStatus = IR_S_IDLE;
+		IRCommand = IR_USED_COMMAND;
+		break;	
+	case IR_R_PLUS_MINUS: // Charge level display
+		IRDisplayState = IR_DISPLAY_CHRG;
+		if (!InIRSpecialMode)
+			IRControlStatus = IR_S_IDLE;
+		IRCommand = IR_USED_COMMAND;
+		break;
+	case IR_R_OFF: // Turn off above displays
+		IRDisplayState = IR_DISPLAY_OFF;
+		LCDClear (IR_SUBSYSTEM_LINE);
+		if (!InIRSpecialMode)
+			IRControlStatus = IR_S_IDLE;
+		IRCommand = IR_USED_COMMAND;
+		break;
+
+	case IR_1: // Time display
+		if (LCDTimeDisplay == LCD_TIME_OFF)
+			LCDTimeDisplay = LCD_TIME_LINE_2;
+		else // turn it off		
+			LCDTimeOff (TRUE);
+		if (!InIRSpecialMode)
+			IRControlStatus = IR_S_IDLE;
+		IRCommand = IR_USED_COMMAND;
+		break;
+	case IR_2: // Date display
+		if (LCDDateDisplay == LCD_DATE_OFF)
+			LCDDateDisplay = LCD_DATE_LINE_1;
+		else // turn it off
+			LCDDateOff (TRUE);
+		if (!InIRSpecialMode)
+			IRControlStatus = IR_S_IDLE;
+		IRCommand = IR_USED_COMMAND;
+		break;
+
+	// Set alarm and talking clock
+	case IR_R_REVERSE: // Set talking clock
+		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
+			case MATIGSALUG:
+				xSay (FALSE, STCM1); break;
+#endif
+			default: // default to English
+				xSay (FALSE, STCE1); break;
+			}
+		IREntryStatus = IR_E_DECIMAL; /* Accept a minutes value */
+		MaxIREntryCharacters = 3; /* default min is one */
+		MaxIRValue = 999;
+		IRControlStatus = IR_S_TC_MINS;
+		IRCommand = IR_USED_COMMAND;
+		break;
+
+	case IR_R_ANGLE: // Set alarm
+		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
+			case MATIGSALUG:
+				xSay (FALSE, SALM1); break;
+#endif
+			default: // default to English
+				xSay (FALSE, SALE1); break;
+			}
+		IREntryStatus = IR_E_DECIMAL; /* Accept a minutes value */
+		MaxIREntryCharacters = 3; /* default min is one */
+		MaxIRValue = 999;
+		IRControlStatus = IR_S_AL_MINS;
+		IRCommand = IR_USED_COMMAND;
+		break;
+	}
 }
-// End of HandleDebuggingKey
+// End of HandleSpecialKey
 
 
 /*****************************************************
@@ -724,8 +827,7 @@ if (IRControlStatus == IR_S_IDLE)
 
 static void HandleMANUALKey (void)
 {
-U8 jjj;
-BOOL NewSetting;
+nonauto U8 jjj;
 
 if (BrainMode == BRAIN_M_REBEL) // Try a bit of naughtiness
 	if (rndrange (1,50) < Naughtiness)
@@ -765,16 +867,20 @@ case IR_S_IDLE:
 	case IR_R_ON: // Exit queue mode
 		if (NumQueuedEntries == 0)
 			switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 				case MATIGSALUG:
 					SayMatigsalugText (TRUE, "Ware natahu neg gimuwen."); break;
+#endif
 				default: // default to English
 					SayEnglishText (TRUE, "No queued entries to action."); break;
 				}
 		else {// have some queued entries
 			switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 				case MATIGSALUG:
 					sprintf (MakeupSpeakString, "Eggimuwen ku ka %u ne suhu.", NumQueuedEntries);
 					break;
+#endif
 				default: // default to English
 					sprintf (MakeupSpeakString, "Actioning %u queued entries.", NumQueuedEntries); break;
 				}
@@ -797,8 +903,10 @@ case IR_S_IDLE:
 	// Low level manual commands
 	case IR_UP:
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (FALSE, "Hipanew"); break;
+#endif
 			default: // default to English
 				SayEnglishText (FALSE, "Manual forward."); break;
 			}
@@ -814,8 +922,10 @@ DoManualForward:
 
 	case IR_DOWN:
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (FALSE, "Isuos"); break;
+#endif
 			default: // default to English
 				SayEnglishText (FALSE, "Manual reverse."); break;
 			}
@@ -832,8 +942,10 @@ DoManualReverse:
 	case IR_R_LEFT: /* Turn left */
 DoTurnLeft:	// (If <demo><left> was pressed)
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (FALSE, "Gibang"); break;
+#endif
 			default: // default to English
 				SayEnglishText (FALSE, "Turn left."); break;
 			}
@@ -845,8 +957,10 @@ DoTurnLeft:	// (If <demo><left> was pressed)
 	case IR_R_RIGHT: /* Turn right */
 DoTurnRight: // (If <demo><right> was pressed)
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (FALSE, "Kawanan"); break;
+#endif
 			default: // default to English
 				SayEnglishText (FALSE, "Turn right."); break;
 			}
@@ -858,8 +972,10 @@ DoTurnRight: // (If <demo><right> was pressed)
 	// High level manual commands
 	case IR_R_FORWARD:
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (FALSE, "Egpabulus"); break;
+#endif
 			default: // default to English
 				SayEnglishText (FALSE, "Forward"); break;
 			}
@@ -867,8 +983,10 @@ DoTurnRight: // (If <demo><right> was pressed)
 		goto IDLE_FR_CONT;
 	case IR_R_REVERSE:
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (FALSE, "Eg-isuos"); break;
+#endif
 			default: // default to English
 				SayEnglishText (FALSE, "Reverse"); break;
 			}
@@ -884,8 +1002,10 @@ IDLE_FR_CONT:
 
 	case IR_R_STRAIGHT:
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (FALSE, "Diritsu"); break;
+#endif
 			default: // default to English
 				SayEnglishText (FALSE, "Straight"); break;
 			}
@@ -895,8 +1015,10 @@ IDLE_FR_CONT:
 
 	case IR_R_ANGLE:
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (FALSE, "angul"); break;
+#endif
 			default: // default to English
 				SayEnglishText (FALSE, "Angle"); break;
 			}
@@ -909,8 +1031,10 @@ IDLE_FR_CONT:
 						
 	case IR_R_SPEED:
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (FALSE, "Keiyal"); break;
+#endif
 			default: // default to English
 				SayEnglishText (FALSE, "Speed"); break;
 			}
@@ -923,6 +1047,7 @@ IDLE_FR_CONT:
 		IRCommand = IR_USED_COMMAND;
 		break;
 
+#if 0
 	case IR_R_AUTOSTOP:
 		if (DiagnosticMode)
 			{
@@ -946,11 +1071,14 @@ IDLE_FR_CONT:
 			IRCommand = IR_USED_COMMAND;
 			}
 		break;
+#endif
 
 	case IR_R_DEMO:
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (FALSE, "Egpapitew"); break;
+#endif
 			default: // default to English
 				SayEnglishText (FALSE, "Demo"); break;
 			}
@@ -979,7 +1107,7 @@ ForwRev_Cont:
 		if (InQueueMode)
 			{
 			if(NumQueuedEntries >= MAX_QUEUE_ENTRIES) {
-				errorbeep ();
+				ErrorBeep ();
 				SayEnglishText(TRUE, "I can't remember that many commands.");
 				}
 			MyQueue[NumQueuedEntries].Speed = DefaultSpeed;
@@ -1032,6 +1160,7 @@ case IR_S_SPEED:
 		}
 	break;
 
+#if 0
 case IR_S_AUTOSTOP:
 	assert (DiagnosticMode);
 	if ((IRCommand == IR_R_OFF) || (IRCommand == IR_R_ON))
@@ -1080,6 +1209,7 @@ case IR_S_FRONT_BACK_MODE:
 		IRCommand = IR_USED_COMMAND;
 		}
 	break;
+#endif
 
 case IR_S_DEMO:
 	switch (IRCommand)
@@ -1147,8 +1277,10 @@ case IR_S_DEMO:
 
 	case IR_2: // <demo><2>
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (FALSE, "Tiku-tiku"); break;
+#endif
 			default: // default to English
 				SayEnglishText (FALSE, "Zigzag"); break;
 			}
@@ -1234,13 +1366,15 @@ case IR_S_DEMO:
 
 void HandleIRKey (U8 IRKeyValue, U8 IRSource)
 {
-U8 j;
+nonauto U8 j;
 
 #ifdef TARGET_WIN32
 ++IRSource; // just to get rid of compiler warning
 #endif
 
+#ifdef TARGET_RABBIT
 LEDToggle (IRKeyLED);
+#endif
 
 /* Make a copy of the key value */
 IRCommand = IRKeyValue; /* We'll set it to IR_USED_COMMAND if we use it */
@@ -1274,10 +1408,15 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 	if (IRCommand == IR_R_HALT) /* can be done at any time */
 		{
 		sendbase_haltmsg ();
-		if (CurrentOutputLanguage == MATIGSALUG)
-			SayMatigsalugText (TRUE, "Sanggol");
-		else
-			SayEnglishText (TRUE, "Halt");
+		Beep (TRIANGLE_WAVE, Beep600Hz, Beep0s1); /* Audible feedback to human */
+		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
+			case MATIGSALUG:
+				SayMatigsalugText (TRUE, "Sanggol"); break;
+#endif
+			default: // default to English
+				SayEnglishText (TRUE, "Halt"); break;
+			}
 		if (IRControlStatus == IR_S_HELP) // give help info as well
 			HandleIRHelp ();
 		IRControlStatus = IR_S_IDLE;
@@ -1286,10 +1425,14 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 
 	else if (IRCommand == IR_R_CLEAR) /* can be done at any time */
 		{
-		if (CurrentOutputLanguage == MATIGSALUG)
-			SayMatigsalugText (TRUE, "Awe");
-		else
-			SayEnglishText (TRUE, "Clear");
+		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
+			case MATIGSALUG:
+				SayMatigsalugText (TRUE, "Awe"); break;
+#endif
+			default: // default to English
+				SayEnglishText (TRUE, "Clear"); break;
+			}
 		if (IRControlStatus == IR_S_HELP) // give help info as well
 			HandleIRHelp ();
 		IRControlStatus = IR_S_IDLE;
@@ -1299,7 +1442,6 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 		HandleIRHelp ();
 	else if (IRCommand == IR_R_QUERY || IRControlStatus == IR_S_QUERY) /* can be done at any time */
 		HandleIRQuery ();
-
 
 	/* Set defaults */
 	if (IRControlStatus == IR_S_IDLE)
@@ -1357,24 +1499,24 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 			case IR_E_DECIMAL:
 				if ((IRCommand == IR_R_PLUS_MINUS) && (MinIRValue < 0))
 					IREnteredSign = (U8)~IREnteredSign;
-				/* Fall through to PIN code below */
-			case IR_E_PIN:
 				if (/* (IRCommand >= IR_0) && */ (IRCommand <= IR_9))
-					{
-					IREntryBuffer[NumEnteredIRCharacters++] = IRCommand;
 					if (Verbosity >= VERBOSITY_NORMAL) {
-						sprintf (MakeupSpeakString, "%u", IRCommand);
+						sprintf (MakeupSpeakString, "%u", IRCommand); //Pronounce the digits
 						SayMakeupSpeakString (FALSE);
 						}
+				/* Fall through to PIN code below */
+			case IR_E_PIN: // The digits are not pronounced
+				if (/* (IRCommand >= IR_0) && */ (IRCommand <= IR_9)) {
+					IREntryBuffer[NumEnteredIRCharacters++] = IRCommand;
+					for (j=0; j<NumEnteredIRCharacters; ++j)
+						IRLCDString[j] = (char)(IREntryStatus==IR_E_PIN ? '*' : IREntryBuffer[j] + '0');
+					IRLCDString[j] = '\0';
+					LCDDisplay (IR_SUBSYSTEM, IRLCDString, TRUE);
 					IRCommand = IR_USED_COMMAND;
 					}
 				break;
 			}
 		}
-
-	// Handle special debugging commands
-	if (IRCommand != IR_USED_COMMAND && InIRSpecialMode)
-		HandleDebuggingKey ();
 
 	// Handle general commands that are independent of brain mode
 	if (IRCommand != IR_USED_COMMAND) /* it wasn't a HALT or CLR etc. or used by the entry routine above */
@@ -1385,8 +1527,10 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 			{
 			case IR_R_MODE:
 				switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 					case MATIGSALUG:
 						SayMatigsalugText (FALSE, "Tuyu"); break;
+#endif
 					default: // default to English
 						SayEnglishText (FALSE, "Mode"); break;
 					}
@@ -1396,8 +1540,10 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 
 			case IR_R_POWER:
 				switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 					case MATIGSALUG:
 						SayMatigsalugText (FALSE, "Kuriyinti"); break;
+#endif
 					default: // default to English
 						SayEnglishText (FALSE, "Power"); break;
 					}
@@ -1413,8 +1559,10 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 						
 			case IR_R_INTENSITY:
 				switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 					case MATIGSALUG:
 						SayMatigsalugText (TRUE, "Kalayag te sulu."); break;
+#endif
 					default: // default to English
 						SayEnglishText (TRUE, "Intensity"); break;
 					}
@@ -1428,8 +1576,10 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 
 			case IR_R_STEALTH:
 				switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 					case MATIGSALUG:
 						SayMatigsalugText (TRUE, "Egmiyew"); break;
+#endif
 					default: // default to English
 						SayEnglishText (TRUE, "Stealth mode"); break;
 					}
@@ -1437,13 +1587,29 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 				IRCommand = IR_USED_COMMAND;
 				break;
 						
+			case IR_R_SPECIAL:
+				switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
+					case MATIGSALUG:
+						SayMatigsalugText (TRUE, "spisiyal"); break;
+#endif
+					default: // default to English
+						SayEnglishText (TRUE, "Special mode"); break;
+					}
+				InIRSpecialMode = FALSE;
+				IRControlStatus = IR_S_SPECIAL;
+				IRCommand = IR_USED_COMMAND;
+				break;
+
 			case IR_R_DIAGNOSTICS:
 				if (DiagnosticMode)
 					{
 					//LCDDisplay (IR_SUBSYSTEM, "Exited diag mode", TRUE);
 					switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 						case MATIGSALUG:
 							SayMatigsalugText (FALSE, "Warad para te tiknisyan."); break;
+#endif
 						default: // default to English
 							SayEnglishText (FALSE, "Exited diagnostic mode."); break;
 						}
@@ -1452,8 +1618,10 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 				else /* Not in diagnostic mode - need to accept a PIN */
 					{
 					switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 						case MATIGSALUG:
 							SayMatigsalugText (FALSE, "Para te tiknisyan"); break;
+#endif
 						default: // default to English
 							SayEnglishText (FALSE, "Diagnostic mode, please enter your PIN."); break;
 						}
@@ -1500,17 +1668,23 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 
 			// Also use the <Mode> button to change output language
 			case IR_R_LEFT:
-				CurrentOutputLanguage = ENGLISH;
-				SayEnglishText (FALSE, "Speaking in English from now on.");
-				IRControlStatus = IR_S_IDLE;
-				IRCommand = IR_USED_COMMAND;
+				if (CurrentOutputLanguage != ENGLISH) {
+					CurrentOutputLanguage = ENGLISH;
+					SayEnglishText (FALSE, "Speaking in English from now on.");
+					IRControlStatus = IR_S_IDLE;
+					IRCommand = IR_USED_COMMAND;
+					}
 				break;
+#ifdef INCLUDE_MATIGSALUG
 			case IR_R_RIGHT:
-				CurrentOutputLanguage = MATIGSALUG;
-				SayMatigsalugText (FALSE, "Eg-eleg-eleg a neg mematigsalug kuntee.");
-				IRControlStatus = IR_S_IDLE;
-				IRCommand = IR_USED_COMMAND;
+				if (CurrentOutputLanguage != MATIGSALUG) {
+					CurrentOutputLanguage = MATIGSALUG;
+					SayMatigsalugText (FALSE, "Eg-eleg-eleg a neg mematigsalug kuntee.");
+					IRControlStatus = IR_S_IDLE;
+					IRCommand = IR_USED_COMMAND;
+					}
 				break;
+#endif
 
 			// Also use the <Mode> button to change verbosity
 			case IR_0: // VERBOSITY_SILENT
@@ -1533,13 +1707,6 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 				IRControlStatus = IR_S_IDLE;
 				IRCommand = IR_USED_COMMAND;
 				break;
-
-			case IR_R_DIAGNOSTICS: // Toggle special mode
-				InIRSpecialMode = (BOOL)!InIRSpecialMode;
-				printf (" SM now %d ", InIRSpecialMode);
-				IRControlStatus = IR_S_IDLE;
-				IRCommand = IR_USED_COMMAND;
-				break;
 			}
 			if (IRCommand != IR_USED_COMMAND) // must have been an invalid attempt to set the brain mode
 				IRControlStatus = IR_S_IDLE;
@@ -1549,15 +1716,7 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 			switch (IRCommand)
 			{
 			case IR_R_OFF:
-				switch (CurrentOutputLanguage) {
-					case MATIGSALUG:
-						SayMatigsalugText (FALSE, "Egpatey a kuntee."); break;
-					default: // default to English
-						SayEnglishText (FALSE, "I'm powering myself off now."); break;
-					}
-				SetPowerAuto (FALSE);
-				setbase_power(BASE_POWER_OFF);
-				sendir_standbymsg ();
+				DoStandbyPowerDown ();
 				IRControlStatus = IR_S_IDLE;
 				IRCommand = IR_USED_COMMAND;
 				break;
@@ -1583,8 +1742,10 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 				SetPowerAuto (FALSE);
 				setbase_power (BASE_POWER_LOW);
 				switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 					case MATIGSALUG:
 						SayMatigsalugText (FALSE, "Kulang"); break;
+#endif
 					default: // default to English
 						SayEnglishText (FALSE, "Low"); break;
 					}
@@ -1620,8 +1781,10 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 				SetLightsAuto (FALSE);
 				setbase_lights (BASE_LIGHTS_LOW);
 				switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 					case MATIGSALUG:
 						SayMatigsalugText (FALSE, "Eg-ebukan ka langun ne me sulu."); break;
+#endif
 					default: // default to English
 						SayEnglishText (FALSE, "Lights all off."); break;
 					}
@@ -1634,8 +1797,10 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 				setbase_lights(BASE_LIGHTS_NORMAL);
 				if (Verbosity == VERBOSITY_TALKATIVE)
 					switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 						case MATIGSALUG:
 							SayMatigsalugText (FALSE, "Eg-ebukan ka dakel ne sulu."); break;
+#endif
 						default: // default to English
 							SayEnglishText (FALSE, "Head lights off."); break;
 						}
@@ -1650,8 +1815,10 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 				setbase_lights(BASE_LIGHTS_FULL);
 				if (Verbosity == VERBOSITY_TALKATIVE)
 					switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 						case MATIGSALUG:
 							SayMatigsalugText (FALSE, "Egpasiha te dakel ne sulu."); break;
+#endif
 						default: // default to English
 							SayEnglishText (FALSE, "Head lights on."); break;
 						}
@@ -1679,8 +1846,10 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 				SetLightsAuto (FALSE);
 				setbase_lights(BASE_LIGHTS_TEST);
 				switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 					case MATIGSALUG:
 						SayMatigsalugText (FALSE, "Egpapitew-pitew te sulu."); break;
+#endif
 					default: // default to English
 						SayEnglishText (FALSE, "Demo lights."); break;
 					}
@@ -1711,18 +1880,20 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 		case IR_S_STEALTH:
 			switch (IRCommand)
 			{
-			case IR_R_OFF:
+			case IR_R_ON:
 				setbase_stealth (TRUE);
+				sendir_ledmsg (IR_LEDMODE_ALWAYSOFF, IR_LEDMODE_ALWAYSOFF);
 				Verbosity = VERBOSITY_SILENT;
-				// SayOff (FALSE);  NOT NEEDED HERE !!!
+				// SayOn (FALSE);  NOT NEEDED HERE !!!
 				IRControlStatus = IR_S_IDLE;
 				IRCommand = IR_USED_COMMAND;
 				break;
 
-			case IR_R_ON:
-                        setbase_stealth (TRUE);
+			case IR_R_OFF:
+				setbase_stealth (FALSE);
+				sendir_ledmsg (IR_LEDMODE_NORMAL, IR_LEDMODE_NORMAL);
 				Verbosity = VERBOSITY_NORMAL;
-				SayOn (FALSE);
+				SayOff (FALSE);
 				IRControlStatus = IR_S_IDLE;
 				IRCommand = IR_USED_COMMAND;
 				break;
@@ -1731,30 +1902,57 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 
 		case IR_S_DIAGNOSTICS:
 			assert (! DiagnosticMode);
-			if (IREntryStatus == IR_E_DONE)
-				{ /* they've entered the four digit pin */
-				if (IREnteredValue == DiagPIN)
-				 	{
+			if (IREntryStatus == IR_E_DONE) { /* They've entered the four digit pin */
+				if (IREnteredValue == DiagPIN) {
 				 	SayEnglishText (FALSE, "Entered diagnostic mode.");
 					//LCDDisplay (IR_SUBSYSTEM, "Entered diag mode", TRUE);
 					DiagnosticMode = TRUE;
 					Verbosity = VERBOSITY_TALKATIVE;
-					beep (SQUARE_WAVE, Beep300Hz, Beep0s2);
-					beep (SQUARE_WAVE, Beep600Hz, Beep0s2);
-					beep (SQUARE_WAVE, Beep800Hz, Beep0s2);
-					beep (SQUARE_WAVE, Beep1200Hz, Beep0s2);
+					Tone (SQUARE_WAVE, Beep300Hz, Beep0s2);
+					Tone (SQUARE_WAVE, Beep600Hz, Beep0s2);
+					Tone (SQUARE_WAVE, Beep800Hz, Beep0s2);
+					Tone (SQUARE_WAVE, Beep1200Hz, Beep0s2);
+					FlushSoundQueue ();
 					IRCommand = IR_USED_COMMAND;
 					}
-				else
-					{
+				else {
 					SayEnglishText (FALSE, "Incorrect PIN.");
 					LCDDisplay (IR_SUBSYSTEM, "Incorrect PIN", TRUE);
-					errorbeep ();
+					ErrorBeep ();
 					}
 				IRControlStatus = IR_S_IDLE; /* either way */
 				}
 			break;
 
+		case IR_S_SPECIAL:
+			HandleSpecialKey ();
+			break;
+
+		case IR_S_TC_MINS:
+			if (IREntryStatus == IR_E_DONE) { // They've entered a number
+				if (IREnteredValue == 0)
+					TalkingClockOn = FALSE;
+				else {// non-zero
+					TalkingClockOn = TRUE;
+					TalkingClockIncrement = IREnteredValue * 60; // seconds
+					NextTalkingClockTime = getsectimer () + TalkingClockIncrement;
+					}
+				IRControlStatus = IR_S_IDLE;
+				IRCommand = IR_USED_COMMAND;
+				}
+
+		case IR_S_AL_MINS:
+			if (IREntryStatus == IR_E_DONE) { // They've entered a number
+				if (IREnteredValue == 0)
+					AlarmSet = ALARM_OFF;
+				else {// non-zero
+					AlarmSet = ALARM_ONCE;
+					AlarmIncrement = IREnteredValue * 60; // seconds
+					AlarmTime = getsectimer () + AlarmIncrement;
+					}
+				IRControlStatus = IR_S_IDLE;
+				IRCommand = IR_USED_COMMAND;
+				}
 		}
 
 
@@ -1799,33 +1997,34 @@ if (IRCommand != IR_USED_COMMAND) /* we still have something */
 
 
 	/* See if we used the command or not */
-	if (IRCommand == IR_USED_COMMAND) /* then we used the command */
-		{
+	if (IRCommand == IR_USED_COMMAND) { /* then we used the command */
 		if (IRKeyValue != IR_REPEAT)
 			IRLastValidCommand = IRKeyValue; // for repeats
-		LastIRStatusChangeTime = getsectimer();
-		beep (SQUARE_WAVE, Beep200Hz, Beep0s1); /* Audible click feedback to human */
-		//beep (SQUARE_WAVE, BeepSilent,Beep0s1);
+		LastManualActionTime = LastIRStatusChangeTime = getsectimer();
+		Beep (SINE_WAVE, Beep1200Hz, Beep0s1); /* Audible click feedback to human */
 		}
-	else /* it was invalid */
-		{
+	else { /* it was invalid */
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (TRUE, "Sayup"); break;
+#endif
 			default: // default to English
 				SayEnglishText (TRUE, "Oops."); break;
 			}
-		errorbeep ();
+		ErrorBeep ();
 		//if (IRCommand == IR_R_ENTER) /* Even invalid "Enter" should reset status */
 			IRControlStatus = IR_S_IDLE;
-		IRLastValidCommand = IR_NO_COMMAND; /* Don't allow a repeat */
+		IRLastValidCommand = IR_NO_COMMAND; /* Don't allow a repeat of a mistake */
 		}
 	}
 
+#ifdef TARGET_RABBIT
 if (IRControlStatus == IR_S_IDLE)
 	LEDOff (IRStatusLED);
-else
+else if (BatteryVoltage > 12.2)
 	LEDOn (IRStatusLED);
+#endif
 }
 /* End of HandleIRKey */
 
@@ -1843,9 +2042,9 @@ void saysounds (constparam U8* x) {char y=*x; ++y;}
 void sendir_standbymsg () {}
 void sendir_poweroffmsg () {}
 
-void beep(U8 waveform, U16 freq, U16 time) {Buzz(30); ++waveform; ++freq; ++time;}
-void errorbeep () {Buzz(100);}
+void SendInterruptToneMsg (U8 waveform, U16 freq, U8 time) {Buzz(30); ++waveform; ++freq; ++time;}
 
+void sendir_ledmsg (U8 front, U8 rear) {printf ("{SET IR LEDS(%u,%u)}",front,rear);}
 void sendbase_haltmsg() {printf ("{HALTBASE}");};
 void sendbase_gomsg(U8 motorspeed, U16 angle, U16 distance) {printf ("{GO}");++motorspeed; ++angle; ++distance;}
 void sendbase_reversemsg(U8 motorspeed, U16 distance) {printf ("{REVERSE}");++motorspeed; ++distance;}
@@ -1881,10 +2080,13 @@ static void PrintHelp (void)
 printf ("\n\nRobert's IR interface test program\n\n");
 
 printf ("IR key simulations are:\n");
-printf ("  /=Help !=Stealth #=Diagnostics $=Autostop %%=Angle\n");
-printf ("  ^=Up &=Down -=+/- |=Straight ;=FBMode [=Off ]=On <=Left >=Right\n");
+//printf ("  /=Help !=Stealth #=Diagnostics $=Autostop %%=Angle\n");
+printf ("  /=Help !=Stealth #=Diagnostics $=Special %%=Angle\n");
+//printf ("  ^=Up &=Down -=+/- |=Straight ;=FBMode [=Off ]=On <=Left >=Right\n");
+printf ("  ^=Up &=Down -=+/- |=Straight [=Off ]=On <=Left >=Right\n");
 printf ("  a=Auto c=Clear d=Demo f=Forward h=Halt i=Intensity l=Lights\n");
-printf ("  m=Manual p=Power q=Query r=Reverse s=Speed t=TravelMode z=Mode\n");
+//printf ("  m=Manual p=Power q=Query r=Reverse s=Speed t=TravelMode z=Mode\n");
+printf ("  m=Manual p=Power q=Query r=Reverse s=Speed z=Mode\n");
 printf ("  '=Repeat\n\n");
 
 printf (" b to enter battery level (0..255), * to enter charging level\n\n");
@@ -1901,6 +2103,7 @@ unsigned int NumDigs;
 int Value;
 
 NumDigs = 0;
+Value = 0;
 for (;;)
 	{
 #ifdef TARGET_WIN32
@@ -1933,12 +2136,13 @@ static const char *KeyName[] = {
 	"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
 	"Clear", "Plus/Minus", "Up", "Down", "Mode", "Help", "Lights", "Power",
 	"On", "Off", "Auto", "Manual", "Right", "Left", "FB", "TM", "Demo", "Query",
-	"Halt", "Enter", "AS", "Diag", "Forward", "Reverse", "Speed", "Angle",
+	"Halt", "Enter", "Special", "Diag", "Forward", "Reverse", "Speed", "Angle",
 	"Intensity", "Stealth", "Straight"};
 
 PrintHelp ();
 InitIO ();
 InitLCD ();
+InitTimers ();
 InitSpeak ();
 InitIRControl ();
 InitControls ();
@@ -1960,7 +2164,8 @@ for (;;)
 		case '/': ThisKey = IR_R_HELP; break;
 		case '!': ThisKey = IR_R_STEALTH; break;
 		case '#': ThisKey = IR_R_DIAGNOSTICS; break;
-		case '$': ThisKey = IR_R_AUTOSTOP; break;
+		//case '$': ThisKey = IR_R_AUTOSTOP; break;
+		case '$': ThisKey = IR_R_SPECIAL; break;
 		case '%': ThisKey = IR_R_ANGLE; break;
 		case '-': ThisKey = IR_R_PLUS_MINUS; break;
 		case '[': ThisKey = IR_R_OFF; break;
@@ -1970,7 +2175,7 @@ for (;;)
 		case '|': ThisKey = IR_R_STRAIGHT; break;
 		case '^': ThisKey = IR_UP; break;
 		case '&': ThisKey = IR_DOWN; break;
-		case ';': ThisKey = IR_R_FRONT_BACK_MODE; break;
+		//case ';': ThisKey = IR_R_FRONT_BACK_MODE; break;
 		case 'A': ThisKey = IR_R_AUTO; break;
 		case 'C': ThisKey = IR_R_CLEAR; break;
 		case 'D': ThisKey = IR_R_DEMO; break;
@@ -1983,7 +2188,7 @@ for (;;)
 		case 'Q': ThisKey = IR_R_QUERY; break;
 		case 'R': ThisKey = IR_R_REVERSE; break;
 		case 'S': ThisKey = IR_R_SPEED; break;
-		case 'T': ThisKey = IR_R_TRAVEL_MODE; break;
+		//case 'T': ThisKey = IR_R_TRAVEL_MODE; break;
 		case 'X': goto ExitNow; break;
 		case 'Z': ThisKey = IR_R_MODE; break;
 		case 13: ThisKey = IR_R_ENTER; break;
@@ -2005,7 +2210,7 @@ for (;;)
 		}
 
 	if (ThisKey == 255)
-		printf ("Nothing assigned -- key ignored\n");
+		printf ("Nothing assigned -- key ignored\b\n");
 	else if (ThisKey == 254)
 		PrintHelp ();
 	else if (ThisKey != 253)
@@ -2020,6 +2225,7 @@ for (;;)
 		printf (" BM=%u, BStat=%u, BStg=%u, IRStat=%u, ISM=%u, ES=%u, NEC=%u, DM=%u\n\n", BrainMode, BrainStatus, BrainStage, IRControlStatus, InIRSpecialMode, IREntryStatus, NumEnteredIRCharacters, DiagnosticMode);
 		}
 
+	UpdateTimers ();
 	UpdateIRControl ();
 	UpdateControls ();
 	UpdateBrain ();

@@ -23,6 +23,8 @@
 #ifndef _COMPAT_H
 #define _COMPAT_H
 
+#define INCLUDE_MATIGSALUG
+
 #ifdef TARGET_RABBIT
 #include "compat-rabbit.h"
 #elif TARGET_POSIX
@@ -72,7 +74,7 @@ typedef unsigned long TIME;
 #define useix
 #define constparam const
 #define nodebug
-
+#define nonauto
 
 /* Xmem stuff */
 typedef void *xmem_ptr_t;

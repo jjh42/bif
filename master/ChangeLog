@@ -1,3 +1,25 @@
+2002-09-27  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* Brain.h		Tried to merge in all Dad's old changes.
+	  IR.h
+	  commonsubs.c
+	  compat-rabbit.h
+         compat.h
+         control.c
+         control.h
+         english.c
+         help.c
+         io.c
+         ircontrol.c
+         master.c
+         matigsalug.c
+         mytime.c
+         mytime.h
+         slave-ir.c
+         slavecomms.c
+         speak.c
+         speak.h
+         tell.c
 2002-09-17  Jonathan Hunt  <jhuntnz@users.sf.net>
 	* brain.c: Change "lcd.h" to "LCD.h" so it works.
 	* lcd.c: Added cast to remove warning.

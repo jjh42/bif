@@ -62,13 +62,18 @@ const slaveresponse_handlertable_t infrared_handler_table[] =
         { 0, 0, NULL }
 };
 
-void ir_init()
+nodebug void ir_init()
 {
+sendir_ledmsg (IR_LEDMODE_NORMAL, IR_LEDMODE_NORMAL);
 }
 
-void sendir_ledmsg(U8 front, U8 back)
+void sendir_ledmsg (U8 front, U8 back)
 {
         char *d;
+
+#ifdef REAL_COMPILER
+		printf (" SendIR_LEDMsg(%u,%u) ", front, back);
+#endif
 
         d = ialloc(sizeof(char) * 4);
 
@@ -80,16 +85,17 @@ void sendir_ledmsg(U8 front, U8 back)
 
         add_slave_msg('I', PRIORITY_NORMAL_MSG, d, SM_FREEDATA);
 }
+/* End of sendir_ledmsg */
 
-static const char standby[] = "STNDBY";
-//static const char standby[] = "P7524"; // Power-down - the digits are just for validation
+
+static const char standby[] = "P00"; // Power-down - the digits are just for validation
 void sendir_standbymsg()
 {
         add_slave_msg('I', PRIORITY_NORMAL_MSG, standby, 0);
 }
 
-static const char poweroff[] = "PWROFF";
-//static const char poweroff[] = "K1396"; // Kill - the digits are just for validation
+
+static const char poweroff[] = "K99"; // Kill - the digits are just for validation
 void sendir_poweroffmsg()
 {
         add_slave_msg('I', PRIORITY_NORMAL_MSG, poweroff, 0);

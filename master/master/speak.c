@@ -23,8 +23,8 @@ void speak_c () { }
 *	Author: Robert Hunt
 *	Created: August 2001
 *
-*	Mod. Number: 15
-*	Last Modified: 8 October 2001
+*	Mod. Number: 18
+*	Last Modified: 10 November 2001
 *	Modified By: Robert Hunt
 *
 ******************************************************/
@@ -45,42 +45,64 @@ static unsigned char SoundBuffer[SB_LENGTH+1];
 /*****************************************************/
 
 
+#if 0
 nodebug void InitSoundQueue (void)
 {
 //printf (" InitSQ ");
 SoundBuffer[0] = '\0';
 }
 /* End of InitSoundQueue */
+#endif
 
+
+/*****************************************************
+
+* Function Name: FlushSoundQueue
+* Description: Sends the sound/tone queue contents to the speech slave
+* Argument: None
+* Return Value: None
+*
+*****************************************************/
 
 void FlushSoundQueue (void)
 {
 #ifndef TARGET_RABBIT // for diagnostics
 unsigned int kk;
 const char *SoundName[] = {
-	"GLOT ", "SHRTP ", " WRDP ", " SENTP ",
-	"IY", "EY", "AE", "AO", "UH", "ER", "AH", "AW", "IH",
-	"EH", "AA", "OW", "UW", "AX", "AY", "OY", "OX", "UU",
-	"p", "t", "k", "f", "TH", "s", "SH", "h", "n", "l", "y", "CH",
-	"WH", "b", "d", "g", "v", "DH", "z", "ZH", "m", "NG", "w", "r", "j",
-	"point ", "zero ", "one ", "two ", "three ", "four ", "five ", "six ", "seven ",
-	"eight ", "nine ", "ten ", "eleven ", "twelve ", "thirteen ", "fourteen ", "fifteen ",
-	"sixteen ", "seventeen ", "eighteen ", "nineteen ", "twenty ", "thirty ", "forty ",
-	"fifty ", "sixty ", "seventy ", "eighty ", "ninety ", "hundred ", "thousand ", "million ",
-	"first ", "second ", "third ",
-	"a ", "the ", "am ", "is ", "are ", "and ", "but ", "not ", "yet ", "at ", "in ",
-	"yes ", "no ", "off ", "on ", "low ", "high ", "left ", "right ", "forward ", "reverse ",
-	"stop ", "go ", "front ", "back ", "automatic ", "manual ", "big ", "small ",
-	"attack ", "retreat ", "reset ", "clear ", "enter ", "number ", "digit ", "letter ",
-	"valid ", "correct ", "normal ", "test ", "full ",
-	"query ", "speak ", "mode ", "diagnostic ", "light ", "power ", "speed ", "stealth ",
-	"intensity ", "distance ", "position ", "switch ", "bumper ", "tilt ", "battery ",
-	"level ", "charge ", "charging ", "travel ", "turn ", "straight ", "angle ", "circle ",
-	"extreme ", "demo ", "help ", "error ", "hello ", "sorry ", "name ", "robot ",
-	"version ", "date ", "time ",
-	"lattitude ", "longitude ", "bearing ", "temperature ", "Celsius ", "Fahrenheit ",
-	" millimetre ", "degree ", "hour ", "minute ", "oops ", "Ouch ",
-	"_eg ", "ka ", 
+/*   1 */	"GLOT ", "SHRTP ", " WRDP ", " SENTP ",
+/*   5 */	"IY", "EY", "AE", "AO", "UH", "ER", "AH", "AW", "IH",
+/*  14 */	"EH", "AA", "OW", "UW", "AX", "AY", "OY", "OX", "UU",
+/*  23 */	"p", "t", "k", "f", "TH", "s", "SH", "h", "n", "l", "y", "CH",
+/*  35 */	"WH", "b", "d", "g", "v", "DH", "z", "ZH", "m", "NG", "w", "r", "j",
+/*  48 */	"point ", "zero ", "one ", "two ", "three ", "four ", "five ", "six ", "seven ",
+/*  57 */	"eight ", "nine ", "ten ", "eleven ", "twelve ", "thirteen ", "fourteen ", "fifteen ",
+/*  65 */	"sixteen ", "seventeen ", "eighteen ", "nineteen ", "twenty ", "thirty ", "forty ",
+/*  72 */	"fifty ", "sixty ", "seventy ", "eighty ", "ninety ", "hundred ", "thousand ", "million ",
+/*  80 */	"first ", "second ", "third ",
+/*  83 */	"day ", "Mon", "chews ", "Wednes", "Thurs", "fry ", "Satur", "sun ",
+/*  91 */	"January ", "February ", "march ", "April ", "may ", "June ",
+/*  97 */	"July ", "August ", "September ", "October ", "November ", "December ",
+/* 103 */	"a ", "the ", "am ", "is ", "are ", "and ", "but ", "not ", "yet ", "at ", "in ",
+/* 114 */	"yes ", "no ", "off ", "on ", "low ", "high ", "left ", "right ", "forward ", "reverse ",
+/* 124 */	"stop ", "go ", "front ", "back ", "automatic ", "manual ",
+/* 130 */	"big ", "small ", "chase ", "escape ",
+/* 134 */	"attack ", "retreat ", "reset ", "clear ", "enter ", "number ", "digit ", "letter ",
+/* 142 */	"valid ", "correct ", "random ", "normal ", "test ", "full ",
+/* 148 */	"query ", "speak ", "mode ", "diagnostic ", "light ", "power ", "speed ", "stealth ",
+/* 156 */	"intensity ", "distance ", "position ", "switch ", "bumper ", "tilt ", "battery ",
+/* 163 */	"level ", "charge ", "charging ", "travel ", "turn ", "straight ", "angle ", "circle ",
+/* 171 */	"extreme ", "demo ", "help ", "error ", "hello ", "halt ", "sorry ", "name ",
+/* 179 */	"robot ", "brain ", "version ", "date ", "time ",
+/* 184 */	"lattitude ", "longitude ", "bearing ", "temperature ", "Celsius ", "Fahrenheit ",
+/* 190 */	" millimetre ", "degree ", "hour ", "minute ", "oops ", "Ouch ",
+/* 196 */	"_eg ", "_ig", "ka ", "kag ", "ke ", "keg ", "ki ", "ku ", "kun ",
+/* 205 */	"lug ", "ma ", "me ", "mig ", "na ", "ne ", "neg ", "ni ",
+/* 213 */	"pa ", "pe ", "sa ", "se ", "si ", "su ", "te ", "teg ", "tig ", "wey ",
+/* 223 */	"ware ", "sabeka ", "daruwa ", "tatelu ", "hep_at ", "lalimma ",
+/* 229 */	"hen_em ", "pitu ", "walu ", "siyam ", "sapulu ",
+/* 234 */	"pulu ", "gatus ", "libu ", "dakel ", "deisek ", "diye ", "kayi ",
+/* 241 */	"kene ", "keneg ", "kenen ", "kuntee ", "meupiya ", "sulu ",
+/* 247 */	"tuyu ", "uya ", "warad "
 	};
 if (SoundBuffer[0] != '\0') { // There's something in it
 	printf ("Saying ");
@@ -100,6 +122,19 @@ if (SoundBuffer[0] != '\0') { // There's something in it
 /* End of FlushSoundQueue */
 
 
+/*****************************************************
+
+* Function Name: QueueSound
+* Description: Queues a sound to go to the speech slave
+* Argument: Sound ID to be queued
+* Return Value: None
+*
+* The purpose of this routine is to reduce the number of short messages to
+*	the sound slave by combining them into a queue first
+* Must call FlushSoundQueue after this to send queued sounds to the speech slave
+*
+*****************************************************/
+
 void QueueSound (U8 SoundNumber)
 {
 int QueueLength;
@@ -108,8 +143,16 @@ if (Verbosity != VERBOSITY_SILENT) {
 	//printf (" QL is %d, added %u ", QueueLength, SoundNumber);
 
 	// Append the sound to the buffer
-	SoundBuffer[QueueLength] = SoundNumber;
-	SoundBuffer[++QueueLength] = '\0';
+	if ((QueueLength > 0)
+	 && (SoundNumber == SentencePause[0])
+	 && (SoundBuffer[QueueLength-1] == WordPause[0]))
+		// Replace word pause with sentence pause
+	 	SoundBuffer[QueueLength-1] = SentencePause[0];
+	 	// Of course this code might miss some if the buffer was just flushed but it's not important
+	else { // not sentence pause
+		SoundBuffer[QueueLength] = SoundNumber;
+		SoundBuffer[++QueueLength] = '\0';
+		}
 
 	// Send the buffer if it's full
 	if (QueueLength >= SB_LENGTH)
@@ -119,11 +162,59 @@ if (Verbosity != VERBOSITY_SILENT) {
 /* End of QueueSound */
 
 
+/*****************************************************
+
+* Function Name: OutOverrideChar
+* Description: Clears the speech queue
+* Argument: None
+* Return Value: None
+*
+*****************************************************/
+
 void OutOverrideChar (void)
 {
 QueueSound (SP_OVERRIDE);
 }
 /* End of OutOverrideChar */
+
+
+/*****************************************************
+
+* Function Name: Tone
+* Description: Queues a tone (after any speech in progress)
+* Arguments: Waveform, Frequency, Time
+* Return Value: None
+*
+* Must call FlushSoundQueue after this
+*
+*****************************************************/
+
+void Tone (U8 Waveform, U16 Freq, U8 Time) // Queues after anything in progress -- must call FlushSoundQueue after this
+{
+QueueSound (0xFE); // Tone
+QueueSound ((U8)(Waveform + 1));
+QueueSound ((U8)((Freq >> 8) + 1));
+QueueSound ((U8)((Freq & 0xFF) + 1));
+QueueSound ((U8)(Time + 1));
+}
+/* End of Tone */
+
+
+/*****************************************************
+
+* Function Name: ErrorBeep
+* Description: Does an error beep
+* Argument: None
+* Return Value: None
+*
+*****************************************************/
+
+void ErrorBeep (void)
+{
+	Beep (SQUARE_WAVE, Beep800Hz, Beep0s2);
+	Beep (SQUARE_WAVE, Beep1200Hz, Beep0s2);
+}
+/* End of ErrorBeep */
 
 
 /*****************************************************
@@ -139,8 +230,10 @@ void SaySayString (BOOL Override)
 {
 switch (CurrentOutputLanguage)
 	{
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		SayMatigsalugText (Override, SayString); break;
+#endif
 	default: // default to English
 		SayEnglishText (Override, SayString); break;
 	}
@@ -266,6 +359,8 @@ CurrentOutputLanguage = SavedOutputLanguage; // Restore it again
 
 nodebug void InitSpeak (void)
 {
+SoundBuffer[0] = '\0';
+
 PronouncePunctuationMarks = FALSE;
 
 CurrentOutputLanguage = ENGLISH;
@@ -287,8 +382,10 @@ nodebug char *GetOffOnString (BOOL goosValue)
 {
 switch (CurrentOutputLanguage)
 	{
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		return goosValue ? "un" : "uf"; break;
+#endif
 	default: // default to English
 		return goosValue ? "on" : "off"; break;
 	}
@@ -309,8 +406,10 @@ nodebug char *GetManAutoString (BOOL gmasValue)
 {
 switch (CurrentOutputLanguage)
 	{
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		return gmasValue ? "automatic" : "manual"; break;
+#endif
 	default: // default to English
 		return gmasValue ? "automatic" : "manual"; break;
 	}
@@ -417,8 +516,10 @@ void SayNormal (BOOL Override)
 {
 switch (CurrentOutputLanguage)
 	{
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		SayString = "nurmal"; break;
+#endif
 	default: // default to English
 		SayString = "normal"; break;
 	}
@@ -440,8 +541,10 @@ nodebug void SayLights (BOOL Override)
 {
 switch (CurrentOutputLanguage)
 	{
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		SayString = "sulu"; break;
+#endif
 	default: // default to English
 		SayString = "lights"; break;
 	}

@@ -134,6 +134,7 @@ void mastermain () /* Called from Posix main */
         init_threads();
         InitIO();
         InitLCD();
+        InitTimers();
         init_slavecomms();
         InitSpeak();
         InitControls();
@@ -143,6 +144,7 @@ void mastermain () /* Called from Posix main */
 
         /* The main loop for the main thread. */
         for(;;) {
+        			 UpdateTimers();
                 UpdateIRControl();
                 UpdateControls();
                 UpdateBrain();
@@ -178,19 +180,4 @@ void restore_tty()
 }
 #endif // TARGET_POSIX
 
-
-#ifdef TARGET_RABBIT
-nodebug root void assert(bool val)
-{
-	if(!val)
-		printf("Assertion failure\n");
-}
-
-root long __deref_xmem(const_xmem_ptr_t ptr)
-{
-	long temp;
-	xmem2root(&temp, ptr, sizeof(temp));
-	return temp;
-}
-#endif // TARGET_RABBIT
-
+/* End of Master.c */

@@ -23,8 +23,8 @@ void tell_c () { }
 *	Author: Robert Hunt
 *	Created: August 2001
 *
-*	Mod. Number: 18
-*	Last Modified: 14 October 2001
+*	Mod. Number: 21
+*	Last Modified: 10 November 2001
 *	Modified by: Robert Hunt
 *
 *******************************************************
@@ -61,20 +61,76 @@ void tell_c () { }
 *
 *****************************************************/
 
-XSINGLESTRING (GSM1) {"Meupiya red. Sikeddi si rubut."};
-XSINGLESTRING (GSE1) {"Hello. I am robot."};
+#ifdef INCLUDE_MATIGSALUG
+XSINGLESTRING (GMoSM) {"Meupiya ne maselem."};
+XSINGLESTRING (GNoSM) {"Meupiya ne meudtu."};
+XSINGLESTRING (GAfSM) {"Meupiya ne maapun."};
+XSINGLESTRING (GNiSM) {"Meupiya ne marusilem."};
+#endif
+XSINGLESTRING (GMoSE) {"Good morning."};
+XSINGLESTRING (GAfSE) {"Good afternoon."};
+XSINGLESTRING (GEvSE) {"Good evening."};
 
 void Greet (void)
 {
+assert (MyTimeDateStruct.tm_hour>=0 && MyTimeDateStruct.tm_hour<=23);
+assert (MyTimeDateStruct.tm_min>=0 && MyTimeDateStruct.tm_min<=59);
+
 switch (CurrentOutputLanguage)
 	{
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
-		xSay (FALSE, GSM1); break;
+		if (MyTimeDateStruct.tm_hour>=5 && MyTimeDateStruct.tm_hour<11)
+			xSay (FALSE, GMoSM);
+		else if (MyTimeDateStruct.tm_hour>=11 && MyTimeDateStruct.tm_hour<13)
+			xSay (FALSE, GNoSM);
+		else if (MyTimeDateStruct.tm_hour>=13 && MyTimeDateStruct.tm_hour<18)
+			xSay (FALSE, GAfSM);
+		else
+			xSay (FALSE, GNiSM);
+		break;
+#endif
+
 	default: // default to English
-		xSay (FALSE, GSE1); break;
+		if (MyTimeDateStruct.tm_hour>=0 && MyTimeDateStruct.tm_hour<12)
+			xSay (FALSE, GMoSE);
+		else if (MyTimeDateStruct.tm_hour>=12 && MyTimeDateStruct.tm_hour<18)
+			xSay (FALSE, GAfSE);
+		else
+			xSay (FALSE, GEvSE);
+	break;
 	}
 }
 /* End of Greet */
+
+
+/*****************************************************
+*
+* Function Name: TellName
+* Description: Tells my name
+* Argument: None
+* Return Value: None
+*
+*****************************************************/
+
+#ifdef INCLUDE_MATIGSALUG
+XSINGLESTRING (TNSM1) {"Sikeddi si rubut."};
+#endif
+XSINGLESTRING (TNSE1) {"I am robot."};
+
+void TellName (void)
+{
+switch (CurrentOutputLanguage)
+	{
+#ifdef INCLUDE_MATIGSALUG
+	case MATIGSALUG:
+		xSay (FALSE, TNSM1); break;
+#endif
+	default: // default to English
+		xSay (FALSE, TNSE1); break;
+	}
+}
+/* End of TellName */
 
 
 /*****************************************************
@@ -93,10 +149,12 @@ constparam char *SlaveName;
 U16 SlaveVersion;
 
 //switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 //	case MATIGSALUG:
 //		sprintf (MakeupSpeakString, "%s ka numiru ku.", MASTER_VERSION_STRING);
 //		SayMakeupSpeakString (TRUE);
 //		break;
+#endif
 //	default: // default to English
 		sprintf (MakeupSpeakString, "My version number is %s.", MASTER_VERSION_STRING);
 //		SayMakeupSpeakString (TRUE);
@@ -105,8 +163,10 @@ SayEnglishMakeupSpeakString (TRUE);
 //	}
 if (DiagnosticMode) { // tell the slave version numbers also
 //	switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 //		case MATIGSALUG:
 //			SayMatigsalugText (FALSE, "Seini ka me numiru te me uripen:"); break;
+#endif
 //		default: // default to English
 			SayEnglishText (FALSE, "The slave version numbers are:");
 //			break;
@@ -124,27 +184,31 @@ if (DiagnosticMode) { // tell the slave version numbers also
 		if (SlaveVersion==0) // no response from slave yet
 //			switch (CurrentOutputLanguage)
 				{
+#ifdef INCLUDE_MATIGSALUG
 //				case MATIGSALUG:
 //					sprintf (MakeupSpeakString, "Ware nakatabak ka %s uripen,", SlaveName);
 //					SayMakeupSpeakString (FALSE);
 //					break;
+#endif
 //				default: // default to English
 					sprintf (MakeupSpeakString, "The %s slave hasn't responded yet,", SlaveName);
 //					SayMakeupSpeakString (FALSE);
-SayEnglishMakeupSpeakString (TRUE);
+SayEnglishMakeupSpeakString (FALSE);
 //					break;
 				}
 		else // have a valid version number
 //			switch (CurrentOutputLanguage)
 				{
+#ifdef INCLUDE_MATIGSALUG
 //				case MATIGSALUG:
 //					sprintf (MakeupSpeakString, "%u.%u.%u.%u te %s uripen,", SlaveVersion>>12, SlaveVersion>>8 & 0xF, SlaveVersion>>4 & 0xF, SlaveVersion & 0xF, SlaveName);
 //					SayMakeupSpeakString (FALSE);
 //					break;
+#endif
 //				default: // default to English
 					sprintf (MakeupSpeakString, "%s slave %u.%u.%u.%u,", SlaveName, SlaveVersion>>12, SlaveVersion>>8 & 0xF, SlaveVersion>>4 & 0xF, SlaveVersion & 0xF);
 //					SayMakeupSpeakString (FALSE);
-SayEnglishMakeupSpeakString (TRUE);
+SayEnglishMakeupSpeakString (FALSE);
 //					break;
 				}
 		}
@@ -167,6 +231,7 @@ char *GetSwitchName (U16 SwitchID)
 assert (SwitchID>=LOWEST_TILT_SWITCH && SwitchID<=HIGHEST_BUMPER_SWITCH);
 switch (CurrentOutputLanguage)
 	{
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		switch (SwitchID)
 		{
@@ -194,6 +259,7 @@ switch (CurrentOutputLanguage)
 			return "invalid"; break;
 		}
 		break;
+#endif
 
 	default: // default to English
 		switch (SwitchID)
@@ -240,6 +306,7 @@ static char *GetPowerString (U8 gpsValue)
 {
 switch (CurrentOutputLanguage)
 	{
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		switch (gpsValue)
 		{
@@ -249,6 +316,7 @@ switch (CurrentOutputLanguage)
 		default: return "nekey-a"; break;
 		}
 		break;
+#endif
 
 	default: // default to English
 		switch (gpsValue)
@@ -276,10 +344,12 @@ switch (CurrentOutputLanguage)
 void TellPower (void)
 {
 switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		sprintf (MakeupSpeakString, "%s ka kuriyinti te %s kuntrul.", GetPowerString (getbase_power()), GetManAutoString (PowerControlAuto));
 		SayMakeupSpeakString (TRUE);
 		break;
+#endif
 	default: // default to English
 		sprintf (MakeupSpeakString, "The power is %s under %s control.", GetPowerString (getbase_power()), GetManAutoString (PowerControlAuto));
 		SayMakeupSpeakString (TRUE);
@@ -287,17 +357,22 @@ switch (CurrentOutputLanguage) {
 	}
 if (DiagnosticMode) // give more details
 	{
-//	switch (CurrentOutputLanguage) {
-//		case MATIGSALUG:
-//			sprintf (MakeupSpeakString, "%s ka kuriyinti te %s kuntrul.", GetPowerString (getbase_power()), GetManAutoString (PowerControlAuto));
-//			SayMakeupSpeakString (FALSE);
-//			break;
-//		default: // default to English
-			sprintf (MakeupSpeakString, "The power level is %u volts.", rndrange (11,14));
-//			SayMakeupSpeakString (FALSE);
-SayEnglishMakeupSpeakString (TRUE);
-//			break;
-//		}
+	switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
+		case MATIGSALUG:
+			sprintf (MakeupSpeakString, "%.1f vult ka batiriya.", BatteryVoltage);
+			SayMakeupSpeakString (FALSE);
+			if (BatteryCharging)
+				SayMatigsalugText (FALSE, "Egkatahuan e te kuriyinti ka batiriya.");
+			break;
+#endif
+		default: // default to English
+			sprintf (MakeupSpeakString, "Battery level is %.1f volts.", BatteryVoltage);
+			SayMakeupSpeakString (FALSE);
+			if (BatteryCharging)
+				SayEnglishText (FALSE, "Battery charging.");
+			break;
+		}
 	}
 }
 
@@ -316,10 +391,12 @@ SayEnglishMakeupSpeakString (TRUE);
 void TellDefaultDistance (void)
 {
 switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		sprintf (MakeupSpeakString, "%u milimitru ka kariyuan.", DefaultDistance);
 		SayMakeupSpeakString (TRUE);
 		break;
+#endif
 	default: // default to English
 		sprintf (MakeupSpeakString, "The default distance is %u millimetres.", DefaultDistance);
 		SayMakeupSpeakString (TRUE);
@@ -342,10 +419,12 @@ switch (CurrentOutputLanguage) {
 void TellDefaultSpeed (void)
 {
 switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		sprintf (MakeupSpeakString, "%u ka keiyal.", DefaultSpeed);
 		SayMakeupSpeakString (TRUE);
 		break;
+#endif
 	default: // default to English
 		sprintf (MakeupSpeakString, "The default speed setting is %u%s.", DefaultSpeed, DefaultSpeed==255 ? " which is the maximum speed" : "");
 		SayMakeupSpeakString (TRUE);
@@ -369,6 +448,7 @@ void TellDefaultAngle (U8 tdaSetting)
 {
 switch (CurrentOutputLanguage)
 	{
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		switch (tdaSetting) {
 			case TELL_NEW_SETTING:
@@ -380,6 +460,7 @@ switch (CurrentOutputLanguage)
 			}
 		SayMakeupSpeakString (TRUE);
 		break;
+#endif
 	default: // default to English
 		switch (tdaSetting) {
 			case TELL_NEW_SETTING:
@@ -410,6 +491,7 @@ static char *GetLightsString (U8 glsValue)
 {
 switch (CurrentOutputLanguage)
 	{
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		switch (glsValue)
 		{
@@ -420,7 +502,7 @@ switch (CurrentOutputLanguage)
 		default: return "nekey-a"; break;
 		}
 		break;
-
+#endif
 	default: // default to English
 		switch (glsValue)
 		{
@@ -448,10 +530,12 @@ switch (CurrentOutputLanguage)
 void TellLights (void)
 {
 switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		sprintf (MakeupSpeakString, "%s ka sulu te %s kuntrul.", GetLightsString (getbase_lights()), GetManAutoString (LightsControlAuto));
 		SayMakeupSpeakString (TRUE);
 		break;
+#endif
 	default: // default to English
 		sprintf (MakeupSpeakString, "The lights are %s under %s control.", GetLightsString (getbase_lights()), GetManAutoString (LightsControlAuto));
 		SayMakeupSpeakString (TRUE);
@@ -474,10 +558,12 @@ switch (CurrentOutputLanguage) {
 void TellHeadlightIntensity (void)
 {
 switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		sprintf (MakeupSpeakString, "%u ka kalayag te sulu.", HeadlightIntensity);
 		SayMakeupSpeakString (TRUE);
 		break;
+#endif
 	default: // default to English
 		sprintf (MakeupSpeakString, "The headlight intensity setting is %u%s.", HeadlightIntensity, HeadlightIntensity==255 ? " which is the maximum intensity" : "");
 		SayMakeupSpeakString (TRUE);
@@ -500,10 +586,12 @@ switch (CurrentOutputLanguage) {
 void TellStealthMode (void)
 {
 switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		sprintf (MakeupSpeakString, "%s ka egpahanadganad.", GetOffOnString (getbase_stealth()));
 		SayMakeupSpeakString (TRUE);
 		break;
+#endif
 	default: // default to English
 		sprintf (MakeupSpeakString, "Stealth mode is %s.", GetOffOnString (getbase_stealth()));
 		SayMakeupSpeakString (TRUE);
@@ -526,10 +614,12 @@ switch (CurrentOutputLanguage) {
 void TellDiagnosticMode (void)
 {
 switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		sprintf (MakeupSpeakString, "%s ka para te tiknisyan.", GetOffOnString (DiagnosticMode));
 		SayMakeupSpeakString (TRUE);
 		break;
+#endif
 	default: // default to English
 		sprintf (MakeupSpeakString, "Diagnostic mode is %s.", GetOffOnString (DiagnosticMode));
 		SayMakeupSpeakString (TRUE);
@@ -552,10 +642,12 @@ switch (CurrentOutputLanguage) {
 void TellAutostopMode (void)
 {
 switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		sprintf (MakeupSpeakString, "%s kag sanggel.", GetManAutoString (getbase_autostop()));
 		SayMakeupSpeakString (TRUE);
 		break;
+#endif
 	default: // default to English
 		sprintf (MakeupSpeakString, "Auto stop mode is %s.", GetManAutoString (getbase_autostop()));
 		SayMakeupSpeakString (TRUE);
@@ -579,6 +671,7 @@ static char *GetTravelModeString (U8 gtmsValue)
 {
 switch (CurrentOutputLanguage)
 	{
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		switch (gtmsValue)
 		{
@@ -588,7 +681,7 @@ switch (CurrentOutputLanguage)
 		default: return "nekey-a"; break;
 		}
 		break;
-
+#endif
 	default: // default to English
 		switch (gtmsValue)
 		{
@@ -615,11 +708,12 @@ switch (CurrentOutputLanguage)
 void TellTravelMode (void)
 {
 switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		sprintf (MakeupSpeakString, "%s ka istayil teg gipanew.", GetTravelModeString (getbase_travelmode()));
 		SayMakeupSpeakString (TRUE);
 		break;
-
+#endif
 	default: // default to English
 		sprintf (MakeupSpeakString, "Travel mode is %s.", GetTravelModeString (getbase_travelmode()));
 		SayMakeupSpeakString (TRUE);
@@ -642,11 +736,12 @@ switch (CurrentOutputLanguage) {
 void TellFrontBack (void)
 {
 switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		sprintf (MakeupSpeakString, "Ka tangkaan kuntee ka an-anayan ne %s.", getbase_front() ? "tangkaan" : "peka");
 		SayMakeupSpeakString (TRUE);
 		break;
-
+#endif
 	default: // default to English
 		sprintf (MakeupSpeakString, "Current front is the default %s.", getbase_front() ? "front" : "back");
 		SayMakeupSpeakString (TRUE);
@@ -669,11 +764,12 @@ switch (CurrentOutputLanguage) {
 void TellFrontBackMode (void)
 {
 switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		sprintf (MakeupSpeakString, "%s ka tangkaan wey peka.", GetManAutoString (getbase_autostop()));
 		SayMakeupSpeakString (TRUE);
 		break;
-
+#endif
 	default: // default to English
 		sprintf (MakeupSpeakString, "Front back switch mode is %s.", GetManAutoString (getbase_autostop()));
 		SayMakeupSpeakString (TRUE);
@@ -697,6 +793,7 @@ static char *GetDirectionString (unsigned int gdsValue)
 {
 switch (CurrentOutputLanguage)
 	{
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		switch (gdsValue)
 		{
@@ -705,7 +802,7 @@ switch (CurrentOutputLanguage)
 		default: return "nekey-a"; break;
 		}
 		break;
-
+#endif
 	default: // default to English
 		switch (gdsValue)
 		{
@@ -747,6 +844,7 @@ Exact90Multiple = (BOOL)((degrees % 90) == 0);
 Exact45Multiple = (BOOL)((degrees % 45) == 0);
 
 switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		if (degrees==90 || degrees==270)
 			sprintf (MakeupSpeakString, "Diya a nakatangke te %s.", GetDirectionString (degrees));
@@ -754,6 +852,7 @@ switch (CurrentOutputLanguage) {
 			sprintf (MakeupSpeakString, "Diya a nakatangke te %u digri.", degrees);
 		SayMakeupSpeakString (TRUE);
 		break;
+#endif
 	default: // default to English
 		if (Exact45Multiple)
 			sprintf (MakeupSpeakString, "I am currently facing %s.", GetDirectionString (degrees));
@@ -778,16 +877,20 @@ switch (CurrentOutputLanguage) {
 
 void TellTime (void)
 {
-if (! FillMyTimeDateStructure ())
-	return;
 assert (MyTimeDateStruct.tm_hour>=0 && MyTimeDateStruct.tm_hour<=23);
 assert (MyTimeDateStruct.tm_min>=0 && MyTimeDateStruct.tm_min<=59);
 
+// Convert to 12 hour time
+if (MyTimeDateStruct.tm_hour>=13)
+	MyTimeDateStruct.tm_hour -= 12;
+
 switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		sprintf (MakeupSpeakString, "alas %u %u.", MyTimeDateStruct.tm_hour, MyTimeDateStruct.tm_min);
 		SayMakeupSpeakString (TRUE);
 		break;
+#endif
 	default: // default to English
 		sprintf (MakeupSpeakString, "The time is %u %u.", MyTimeDateStruct.tm_hour, MyTimeDateStruct.tm_min);
 		SayMakeupSpeakString (TRUE);
@@ -808,29 +911,30 @@ switch (CurrentOutputLanguage) {
 *****************************************************/
 
 //XSTRING(MSMonthName)
+#ifdef INCLUDE_MATIGSALUG
 static const char *MSMonthName[12] =
 		{"Iniru","Pibriru","Marsu","Abril","Mayu","Hunyu",
 		 "Hulyu","Agustu","Siptimbri","Uktubri","Nuvimbri","Disimbri"};
-		 
 static const char *MSDayName[7] =
 		{"Duminggu", "Lunis", "Martis", "Mirkulis", "Huwibis", "Biyirnis", "Sebaddu"};
+#endif
 
 
 void TellDate (void)
 {
-if (! FillMyTimeDateStructure ())
-	return;
 assert (MyTimeDateStruct.tm_mday>=1 && MyTimeDateStruct.tm_mday<=31);
 assert (MyTimeDateStruct.tm_mon>=1 && MyTimeDateStruct.tm_mon<=12);
 assert (MyTimeDateStruct.tm_wday>=0 && MyTimeDateStruct.tm_wday<=6);
 
 switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
-		sprintf (MakeupSpeakString, "%s, pitsa %u te %s kuntee.", MSDayName[MyTimeDateStruct.tm_wday], MyTimeDateStruct.tm_mday, MSMonthName[MyTimeDateStruct.tm_mon+1]);
+		sprintf (MakeupSpeakString, "%s, pitsa %u te %s kuntee.", MSDayName[MyTimeDateStruct.tm_wday], MyTimeDateStruct.tm_mday, MSMonthName[MyTimeDateStruct.tm_mon-1]);
 		SayMakeupSpeakString (TRUE);
 		break;
+#endif
 	default: // default to English
-		sprintf (MakeupSpeakString, "It is %s, %s %u today.", EnglishDayName[MyTimeDateStruct.tm_wday], EnglishMonthName[MyTimeDateStruct.tm_mon+1], MyTimeDateStruct.tm_mday);
+		sprintf (MakeupSpeakString, "It is %s, %s %u today.", EnglishDayName[MyTimeDateStruct.tm_wday], EnglishMonthName[MyTimeDateStruct.tm_mon-1], MyTimeDateStruct.tm_mday);
 		SayMakeupSpeakString (TRUE);
 		break;
 	}
@@ -860,10 +964,12 @@ temp = (float)rndrange (200, 450) / 10.0;
 #endif
 
 switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 	case MATIGSALUG:
 		sprintf (MakeupSpeakString, "%2.1f ka keinit.", temp);
 		SayMakeupSpeakString (TRUE);
 		break;
+#endif
 	default: // default to English
 		sprintf (MakeupSpeakString, "The temperature is %2.1f degrees Celsius.", temp);
 		SayMakeupSpeakString (TRUE);

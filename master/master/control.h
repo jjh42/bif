@@ -10,8 +10,8 @@
 *	Author: Robert Hunt
 *	Created: September 2001
 *
-*	Mod. Number: 4
-*	Last Modified: 13 September 2001
+*	Mod. Number: 7
+*	Last Modified: 11 November 2001
 *	Modified by: Robert Hunt
 *
 *****************************************************/
@@ -31,9 +31,11 @@
 
 bool PowerControlAuto;
 bool LightsControlAuto;
+bool AutoOff;
 
 U8 BatteryLevel, ChargingLevel;
 float BatteryVoltage, ChargingVoltage;
+bool BatteryCharging;
 
 
 /******************************************************
@@ -72,31 +74,31 @@ U8 HeadlightIntensity, MyHeadlightIntensity; /* 0..255 */
 *
 *****************************************************/
 
-extern void GetMyParameters (void);
+void GetMyParameters (void);
 
-extern BOOL BumperSwitchesOk (U8 WhichSwitches);
+BOOL BumperSwitchesOk (U8 WhichSwitches);
 #define CHECK_FRONT_BUMPER_SWITCHES 0x01
 #define CHECK_REAR_BUMPER_SWITCHES 0x02
 #define CHECK_SIDE_BUMPER_SWITCHES 0x04
 #define CHECK_ALL_BUMPER_SWITCHES 0x07
 
-extern BOOL DoGo (void);
-extern BOOL DoReverse (void);
+BOOL DoGo (void);
+BOOL DoReverse (void);
+void DoStandbyPowerDown (void);
 
-extern void SetLightsAuto (bool onauto);
-extern void SetPowerAuto (bool onauto);
+void SetLightsAuto (bool onauto);
+void SetPowerAuto (bool onauto);
 
-extern void ActionNewBatteryLevel (U8 anblLevel);
-extern void ActionNewChargingLevel (U8 anclLevel);
+void ActionNewBatteryLevel (U8 anblLevel);
+void ActionNewChargingLevel (U8 anclLevel);
 
-extern void ActionSwitchChange (U16 SwitchID, U8 SwitchState);
-extern void ActionStoppedMoving (bool WasGoingForwards, bool CompletedGo);
+void ActionSwitchChange (U16 SwitchID, U8 SwitchState);
+void ActionStoppedMoving (bool WasGoingForwards, bool CompletedGo);
 
-extern void InitControls (void);
-extern void UpdateControls (void);
+void InitControls (void);
+void UpdateControls (void);
 
 #endif
 
 /* End of Control.h */
 /*** endheader */
-

@@ -248,4 +248,21 @@ nodebug void printhexdword(char *str, U32 data)
 }
 
 
+#ifdef TARGET_RABBIT
+nodebug root void assert_handler(bool val)
+{
+	if(!val)
+		printf("Assertion failure\n");
+}
+
+
+root long __deref_xmem(const_xmem_ptr_t ptr)
+{
+	long temp;
+	xmem2root(&temp, ptr, sizeof(temp));
+	return temp;
+}
+#endif // TARGET_RABBIT
+
+
 /* End of commonsubs.c */

@@ -23,8 +23,8 @@ void english_c () { }
 *	Adapted by: Robert Hunt
 *	Created: August 2001
 *
-*	Mod. Number: 16
-*	Last Modified: 14 October 2001
+*	Mod. Number: 20
+*	Last Modified: 9 November 2001
 *	Modified By: Robert Hunt
 *
 * Current problems:
@@ -830,6 +830,10 @@ void OutString (constparam char *string)
 	BOOL Matched;
 	char tmp[3];
 
+#ifdef TARGET_WIN32
+	ThisPhoneme = 0; // Just to get rid of compiler warning
+#endif
+
 //printf (" OutString(%s) ", string);
 	Hanging = 0;
 	InLiteral = FALSE;
@@ -859,19 +863,19 @@ void OutString (constparam char *string)
 				if(tmp[0] == 0)
 					break; // End of list
 				if (tmp[1] != '\0') { // Then the phoneme name is not just one letter
-					if (tmp[0] == Hanging
-					 && tmp[1] == ThisChar) { // Have a match
-//printf ("Matched <%c%c> @ %d ", Hanging, ThisChar, x);
+					if ((tmp[0] == Hanging)
+					 && (tmp[1] == ThisChar)) { // Have a match
+//printf ("Matched <%c%c>=<%c%c> @ %d ", Hanging, ThisChar, tmp[0], tmp[1], x);
 						xmem2root(&ThisPhoneme, XACCESS(RecordedPhoneme, ((x * 2)+1)), 1);
+//printf ("so %d ", ThisPhoneme);
 						Matched = TRUE;
 						break;
 					}
-					if (Hanging < tmp[0]) { // Gone too far in sorted table -- no match
+					if (Hanging < tmp[0]) // Gone too far in sorted table -- no match
 						break;
-					}
 				}
 				x++;
-			}
+			} // End of for
 			if (! Matched) printf ("\nOutString couldn't match \"%c%c\" ", Hanging, ThisChar);
 			Hanging = '\0';
 		}
@@ -886,6 +890,7 @@ void OutString (constparam char *string)
 					if (tmp[0] == ThisChar) { // Have a match
 //printf ("Matched <%c> @ %d ", ThisChar, x);
 						xmem2root(&ThisPhoneme, XACCESS(RecordedPhoneme, ((x * 2)+1)), 1);
+//printf ("so %d ", ThisPhoneme);
 						Matched = TRUE;
 						break;
 					}
@@ -900,6 +905,7 @@ void OutString (constparam char *string)
 		if (! Hanging) {
 			if (Matched) {
 				// Send char to sound slave
+//printf (" QS(%d) ", ThisPhoneme);				
 				QueueSound (ThisPhoneme);
 			}
 		}
@@ -914,7 +920,7 @@ const_xmem_ptr_t MatchPrerecordedWord (char word[]) // Returns 0 if no match
 {
 	char lcWord[MAX_LENGTH];
 	unsigned int y;
-	int CompareResult;
+	//int CompareResult;
         char tmp[32];
 	
 	/* Check for prerecorded words */
@@ -936,11 +942,12 @@ const_xmem_ptr_t MatchPrerecordedWord (char word[]) // Returns 0 if no match
                 xmem2root(tmp, TheRecordedWord, sizeof(tmp));
                 if (*tmp == 0)	// Exit loop
                 	break;
-		CompareResult = strcmp (lcWord, tmp);
+		//CompareResult = strcmp (lcWord, tmp);
 // printf (" Compare <%s> with <%s>=%d ", lcWord, tmp, CompareResult);
-		if (CompareResult < 0) // gone too far in sorted list
+// printf (" Compare <%s> with <%s>=%d ", lcWord, tmp, strcmpi (lcWord, tmp));
+		if (strcmp (lcWord,tmp) < 0) // gone too far in sorted list
 			break;
-		if (CompareResult == 0) {// matched
+		if (strcmp (lcWord,tmp) == 0) {// matched
 //printf ("Matched prerecorded word <%s> ", lcWord);
 			// Deref pointer once so we return a pointer to the string
 			return XACCESS(RecordedWord, ((y * 2) + 1));
@@ -949,7 +956,9 @@ const_xmem_ptr_t MatchPrerecordedWord (char word[]) // Returns 0 if no match
 	}
 
 	// If we get here, we didn't get a match
+#ifndef TARGET_RABBIT
 	printf (" No precorded <%s> ", lcWord);
+#endif
 	return 0;
 }
 /* End of MatchPrerecordedWord */
@@ -1623,7 +1632,8 @@ void HaveSpecial (void)
 			SayASCII (Char);
 		else if (Char == ',')
 			QueueSound (WordPause[0]); // Presumably there will also be another word pause for the space
-		else if (Char == '.' || Char == ':' || Char == ';' || Char == '!')
+								// which will make it about the right length
+		else if (Char == '.' || Char == ':' || Char == ';' || Char == '?')
 			QueueSound (SentencePause[0]);
 		else
 			SayASCII (Char);
@@ -1871,7 +1881,7 @@ void SayEnglishText (BOOL Override, char *Text)
 {
 	printf ("SayEng(%u,%s)\n", Override, Text);
 	TextPointer = Text; // Copy pointer
-	InitSoundQueue ();
+	//InitSoundQueue ();
 
 	if (Override)
 		OutOverrideChar ();

@@ -23,8 +23,8 @@ void help_c () { }
 *	Author: Robert Hunt
 *	Created: September 2001
 *
-*	Mod. Number: 11
-*	Last Modified: 17 October 2001
+*	Mod. Number: 13
+*	Last Modified: 17 November 2001
 *	Modified by: Robert Hunt
 *
 *******************************************************

@@ -142,14 +142,14 @@ const slaveconst_t slaveconst_table[NUM_SLAVES] =
 
 slavedynamic_t slavedynamic_table[NUM_SLAVES];
 
-xmem void set_slave_debuglevel(int level)
+nodebug void set_slave_debuglevel(int level)
 {
         printf("Setting llslave debug level %d\n", level);
         sldebug = level;
 }
 
 /* Return -1 if id doesn't exist. */
-int slaveidtoindex(char id)
+nodebug int slaveidtoindex(char id)
 {
         int i;
 
@@ -163,7 +163,7 @@ int slaveidtoindex(char id)
         return -1;
 }
 
-xmem void init_slavecomms()
+nodebug void init_slavecomms()
 {
         int i;
 
@@ -171,7 +171,7 @@ xmem void init_slavecomms()
         sldebug = 0;
 #endif
 
-        if(sldebug > 0)
+        if(sldebug >= 1)
                 printf("Init low-level slv comms\n");
 
         list_init(&msglist);
@@ -217,7 +217,7 @@ void slavecomms_thread()
         slavemsgentry_t *highest;
         U8 bestpriority;
 
-        if(sldebug > 0)
+        if(sldebug >= 1)
                 printf("Beginning llslavecomms thrd\n");
 
         for(;;) {
@@ -261,7 +261,7 @@ void slavecomms_thread()
         }
 }
 
-void send_msg(slavemsgentry_t *msg)
+nodebug void send_msg(slavemsgentry_t *msg)
 {
 	if(sldebug >= 1 && isupper(msg->id)) {
 		// Print this message to stdio
@@ -292,7 +292,7 @@ void commsecho(char c)
         putchar(c);
 }
 
-void rawslavecomms(bool echo)
+nodebug void rawslavecomms(bool echo)
 {
         int c;
 
@@ -325,7 +325,7 @@ void rawslavecomms(bool echo)
 }
 
 /* This is called only when expecting a response from slave id. */
-xmem void handle_response(constparam slavemsgentry_t *msg)
+nodebug void handle_response(constparam slavemsgentry_t *msg)
 {
         int c;
         int index;
@@ -339,7 +339,7 @@ Start:
         c = getslavechar(GET_REAL_CHAR);
 
         if(c < 0) {
-                if(sldebug > 0)
+                if(sldebug >= 2)
                         printf("No rply frm slv %c ", msg->id);
                 return;
         }
@@ -349,7 +349,7 @@ Start:
         	c--;
 
         if(toupper(c) != toupper(msg->id)) {
-                if(sldebug > 0)
+                if(sldebug >= 2)
                         printf("Rspnse frm slv %c when expected frm %c\n",
                                 (char) c, msg->id);
         }
@@ -358,19 +358,20 @@ Start:
         index = slaveidtoindex(c);
 
         if(index == -1) {
-                if(sldebug > 0)
+                if(sldebug >= 2)
                         printf("Slv %c doesn't exist\n", (char) c);
                         return;
         }
 #ifdef TARGET_RABBIT
-        LEDOn (SlaveLED0 + index);
+			if (BatteryVoltage > 12.1) // Plenty of power
+				LEDOn (SlaveLED0 + index);
 #endif
 
         if(!islower(c)) { /* Ignore lowercase messages. */
                 /* This is an actual message */
                 c = getslavechar(GET_REAL_CHAR);
                 if(c < 0) {
-                        if(sldebug > 0)
+                        if(sldebug >= 2)
                                 printf("Empty msg frm slv %c\n", (char) c);
                         return;
                 }
@@ -387,7 +388,7 @@ Start:
 
                 if(t->msg != c) {
                         /* This message isn't in the table */
-                        if(sldebug > 0)
+                        if(sldebug >= 2)
                                 printf("Inv msg %c frm slv %s\n", (char) c,
                                         slaveconst_table[index].name);
                         return;
@@ -400,13 +401,13 @@ Start:
                 while(len) {
                         c = getslavechar(GET_REAL_CHAR);
                         if(c < 0) {
-                                if(sldebug > 0)
+                                if(sldebug >= 2)
                                 printf("Error gettin msg\n");
                                 return;
                         }
 
                         if(d >= msgdata + sizeof(msgdata) * sizeof(msgdata[0])) {
-                                if(sldebug > 0)
+                                if(sldebug >= 2)
                                         printf("Ovrflw in msg data\n");
                                 return;
                         }
@@ -428,7 +429,7 @@ Start:
                 /* We have receive the right amount of data and it is in
                  * msgdata. Call the handler. */
                  // First print the message to STDIO
-                if(sldebug >= 2)
+                if(sldebug >= 1)
                 	printf("Msg from %s: %c%c%s\n", slaveconst_table[index].name,
                 		(char) slaveconst_table[index].id, (char) response_msg,
                 		msgdata);
@@ -438,7 +439,7 @@ Start:
                 if(result == 0)
                         return;
                 else if(result < 0) {
-                        if(sldebug > 0)
+                        if(sldebug >= 2)
                                 printf("Inv msg contents\n");
                         return;
                 }
@@ -453,7 +454,7 @@ Start:
 #endif
 }
 
-xmem void add_slave_msg(char id, U8 priority, constparam char *data, U8 flags)
+nodebug void add_slave_msg(char id, U8 priority, constparam char *data, U8 flags)
 {
         slavemsgentry_t *entry;
 
@@ -468,12 +469,12 @@ xmem void add_slave_msg(char id, U8 priority, constparam char *data, U8 flags)
         list_add(&msglist, (listentry_t*)entry);
 }
 
-xmem void putslavestring(constparam char *str)
+nodebug void putslavestring(constparam char *str)
 {
         putslavedata((void *) str, strlen(str));
 }
 
-xmem void putslavechar(char c)
+nodebug void putslavechar(char c)
 {
         putslavedata(&c, sizeof(c));
 }
@@ -509,12 +510,13 @@ void putslavedata(constparam void *data, U16 len)
 
 #else
 
-bool haveslavechar()
+nodebug bool haveslavechar()
 {
         return serDrdFree() != DINBUFSIZE;
 }
+
 /* Get a char for the slave or return -1 if no available or timeout. */
-int getslavechar(BOOL GetEchoFlag)
+nodebug int getslavechar(BOOL GetEchoFlag)
 {
 	int retval;
 	unsigned long timeout;
@@ -523,7 +525,7 @@ int getslavechar(BOOL GetEchoFlag)
 
 	while((retval = serDgetc()) == -1) {		
 		if(getmsectimer() > timeout + MILLISECOND_TIMEOUT) {
-			if (sldebug>=1) {
+			if (sldebug >= 2) {
 				printf("Timeout ");
 				if (GetEchoFlag) printf("waiting for echo ");
 				}
@@ -541,7 +543,7 @@ int getslavechar(BOOL GetEchoFlag)
 	return retval;
 }
 
-void emptyslavebuffer()
+nodebug void emptyslavebuffer()
 {
         serDwrFlush();
         serDrdFlush();
@@ -550,7 +552,7 @@ void emptyslavebuffer()
 }
 
 /* Write to the slave comms */
-void putslavedata(constparam void *data, U16 len)
+nodebug void putslavedata(constparam void *data, U16 len)
 {
 char ThisChar;
 
@@ -579,12 +581,12 @@ char ThisChar;
 #endif
 
 static const char vmsg[] =  { VERSION_MSG, 0 };
-xmem void sendslave_versionmsg(char id)
+nodebug void sendslave_versionmsg(char id)
 {
         add_slave_msg(id, PRIORITY_LOW_MSG, vmsg, SM_EXPECTRESPONSE);
 }
 
-xmem void sendslave_dumpmsg(char id, char area)
+nodebug void sendslave_dumpmsg(char id, char area)
 {
         char *d;
 
@@ -600,7 +602,7 @@ xmem void sendslave_dumpmsg(char id, char area)
         add_slave_msg(id, PRIORITY_URGENT_MSG, d, SM_EXPECTRESPONSE | SM_FREEDATA);
 }
 
-xmem void sendslave_setmsg(char id, U16 address, U8 data)
+nodebug void sendslave_setmsg(char id, U16 address, U8 data)
 {
         char *d;
 
@@ -614,7 +616,7 @@ xmem void sendslave_setmsg(char id, U16 address, U8 data)
 }
 
 /* Generic message handlers. */
-xmem int generic_handler_error(char *d)
+nodebug int generic_handler_error(char *d)
 {
         LEDOff (SlaveLED0 + from_slaveindex);
         printf("Error frm slv %s with data of %s\n",
@@ -622,7 +624,7 @@ xmem int generic_handler_error(char *d)
         return  0;
 }
 
-xmem int generic_handler_version(char *d)
+nodebug int generic_handler_version(char *d)
 {
         S32 version;
 
@@ -637,7 +639,7 @@ xmem int generic_handler_version(char *d)
         return 0;
 }
 
-xmem int generic_handler_dump(char *d)
+nodebug int generic_handler_dump(char *d)
 {
         S32 address;
         U8 data[16];

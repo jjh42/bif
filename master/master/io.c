@@ -23,8 +23,8 @@ void io_c () { }
 *	Author: Robert Hunt
 *	Created: September 2001
 *
-*	Mod. Number: 11
-*	Last Modified: 14 October 2001
+*	Mod. Number: 12
+*	Last Modified: 27 October 2001
 *	Modified by: Robert Hunt
 *
 *******************************************************
@@ -154,7 +154,6 @@ nodebug root void LCDNibbleOut (U8 Nibble)
 {
 #ifdef TARGET_RABBIT
 // Output the lower nibble of our parameter to various pins on ports B & D
-//U8 Temp;
 WrPortI (PDDR, &PDDRShadow,
 	(PDDRShadow & 0x36) // Clear bits 7,6,3,0
 	| (Nibble & 0x09) // Set bits 3,0 to nibble bits 3,0
@@ -233,7 +232,7 @@ LCDNibbleOut (DByte); // Out LS nibble
 *
 *****************************************************/
 
-nodebug root void BuzzerOff (void)
+nodebug void BuzzerOff (void)
 {
 #ifdef TARGET_RABBIT
 BitWrPortI (PEDR, &PEDRShadow, 0, 0);
@@ -255,7 +254,7 @@ BuzzerIsOn = FALSE;
 *
 *****************************************************/
 
-nodebug root void BuzzerOn (void)
+nodebug void BuzzerOn (void)
 {
 #ifdef TARGET_RABBIT
 BitWrPortI (PEDR, &PEDRShadow, 1, 0);
@@ -277,7 +276,7 @@ BuzzerIsOn = TRUE;
 *
 *****************************************************/
 
-nodebug root void Buzz (unsigned long BBuzzTime)
+nodebug void Buzz (unsigned long BBuzzTime)
 {
 assert (BBuzzTime>0);
 BuzzerOn ();
@@ -296,7 +295,7 @@ BuzzTime = BBuzzTime;
 *
 *****************************************************/
 
-nodebug root void LEDOff (U8 LEDNumber)
+nodebug void LEDOff (U8 LEDNumber)
 {
 assert (LEDNumber<=DS8);
 #ifdef TARGET_RABBIT
@@ -317,7 +316,7 @@ BitWrPortI (PADR, &PADRShadow, 1, LEDNumber);
 *
 *****************************************************/
 
-nodebug root void LEDOn (U8 LEDNumber)
+nodebug void LEDOn (U8 LEDNumber)
 {
 assert (LEDNumber<=DS8);
 #ifdef TARGET_RABBIT
@@ -338,10 +337,10 @@ BitWrPortI (PADR, &PADRShadow, 0, LEDNumber);
 *
 *****************************************************/
 
-nodebug root BOOL LEDToggle (U8 LEDNumber)
+nodebug BOOL LEDToggle (U8 LEDNumber)
 {
 #ifdef TARGET_RABBIT
-U8 ThisState;
+nonauto U8 ThisState;
 assert (LEDNumber<=DS8);
 ThisState = PADRShadow & (1<<LEDNumber);
 BitWrPortI (PADR, &PADRShadow, !ThisState, LEDNumber);
@@ -388,7 +387,7 @@ return FALSE;
 *
 *****************************************************/
 
-nodebug root void UpdateIO (void)
+nodebug void UpdateIO (void)
 {
 // Toggle IO-Running LED every 256 times through
 static unsigned int UIOCount;

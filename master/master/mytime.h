@@ -25,13 +25,27 @@
 #endif
 
 /* This is the header for mytime.c. Mytime.* is for compatibility in time functions. */
-struct tm MyTimeDateStruct;
+struct tm MyTimeDateStruct; // Updated each main loop by UpdateTimers
 
-/* Return a millisecond value that is incremented every msec. */
-extern TIME getmsectimer();
-/* Return a second value. */
-extern TIME getsectimer();
+#ifdef TARGET_RABBIT
+#define getmsectimer() MS_TIMER
+#define getsectimer() SEC_TIMER
+#else
+extern TIME getmsectimer(); /* Return a millisecond value that is incremented every msec. */
+extern TIME getsectimer(); /* Return a second value */
+#endif
+
 BOOL FillMyTimeDateStructure (void);
+TIME LastManualActionTime, LastAutoActionTime; // secs
+U8 AlarmSet;
+	#define ALARM_OFF 0 // must be zero
+	#define ALARM_ONCE 1
+	#define ALARM_REPEAT 2
+TIME AlarmTime; // secs
+TIME AlarmIncrement; // secs
+BOOL TalkingClockOn;
+TIME NextTalkingClockTime; // secs
+TIME TalkingClockIncrement; // secs
 
 #ifdef REAL_COMPILER
 extern int tm_rd(struct tm *t);
@@ -39,5 +53,8 @@ extern int tm_rd(struct tm *t);
 
 extern const char *EnglishMonthName[12];
 extern const char *EnglishDayName[7];
+
+void InitTimers (void);
+void UpdateTimers (void);
 
 /*** endheader */

@@ -23,8 +23,8 @@ void control_c () { }
 *	Author: Robert Hunt
 *	Created: September 2001
 *
-*	Mod. Number: 11
-*	Last Modified: 14 October 2001
+*	Mod. Number: 18
+*	Last Modified: 11 November 2001
 *	Modified by: Robert Hunt
 *
 *******************************************************
@@ -46,7 +46,9 @@ void control_c () { }
 #include "speak.h"
 #include "Brain.h"
 #include "slave-base.h"
+#include "slave-ir.h"
 #include "commonsubs.h"
+#include "mytime.h"
 
 
 /*****************************************************
@@ -55,31 +57,36 @@ void control_c () { }
 *
 *****************************************************/
 
-#define BATTERY_NORMAL_LEVEL 180 // used for startup
+#define BATTERY_NORMAL_LEVEL 195 // 12V level used for startup
 
 #define LOW_LIGHT_THRESHOLD 160
 #define HIGH_LIGHT_THRESHOLD 180
 
 // Note: Adjustments here will have to be made twice
-#ifdef TARGET_WIN32
-#define BATTERY_CALIBRATION_FACTOR 15.0F
-#define CHARGING_CALIBRATION_FACTOR 15.0F
+//*****
 
-#define NOT_CHARGING_THRESHOLD 11.0F
+#ifdef TARGET_WIN32
+#define BATTERY_CALIBRATION_FACTOR 16.2F
+#define CHARGING_CALIBRATION_FACTOR 16.2F
+
+#define NOT_CHARGING_THRESHOLD 2.0F // to handle AC
 #define CHARGING_THRESHOLD 12.1F
 
 #define LOW_POWER_THRESHOLD 11.5F
 #define FULL_POWER_THRESHOLD 12.3F
-#else // not TARGET_WIN32
-#define BATTERY_CALIBRATION_FACTOR 15.0
-#define CHARGING_CALIBRATION_FACTOR 15.0
 
-#define NOT_CHARGING_THRESHOLD 11.0
+#else // not TARGET_WIN32
+
+#define BATTERY_CALIBRATION_FACTOR 16.2
+#define CHARGING_CALIBRATION_FACTOR 16.2
+
+#define NOT_CHARGING_THRESHOLD 2.0 // to handle AC
 #define CHARGING_THRESHOLD 12.1
 
 #define LOW_POWER_THRESHOLD 11.5
 #define FULL_POWER_THRESHOLD 12.3
 #endif
+
 
 /*****************************************************
 *
@@ -197,10 +204,12 @@ if (! BumperSwitchesOk (CHECK_FRONT_BUMPER_SWITCHES))
 GetMyParameters ();
 if (Verbosity == VERBOSITY_TALKATIVE)
 	switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 		case MATIGSALUG:
 			sprintf (MakeupSpeakString, "Egpabulus kag gipanew.");
 			SayMakeupSpeakString (TRUE);
 			break;
+#endif
 		default: // default to English
 			if (MyAngle == 0)
 				sprintf (MakeupSpeakString, "Going forward %u millimeters at speed %u.", MyDistance, MySpeed);
@@ -233,10 +242,12 @@ if (! BumperSwitchesOk (CHECK_REAR_BUMPER_SWITCHES))
 GetMyParameters ();
 if (Verbosity == VERBOSITY_TALKATIVE)
 	switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 		case MATIGSALUG:
 			sprintf (MakeupSpeakString, "Eg-isuos e kag gipanew.");
 			SayMakeupSpeakString (TRUE);
 			break;
+#endif
 		default: // default to English
 			sprintf (MakeupSpeakString, "Reversing %u millimeters at speed %u.", MyDistance, MySpeed);
 			SayMakeupSpeakString (TRUE);
@@ -246,6 +257,32 @@ sendbase_reversemsg (MySpeed, MyDistance);
 return TRUE;
 }
 /* End of DoReverse */
+
+
+/*****************************************************
+*
+* Function Name: DoStandbyPowerDown
+* Description: Puts me into standby mode (Can be woken by IR keypress)
+* Argument: None
+* Return Value: None
+*
+*****************************************************/
+
+void DoStandbyPowerDown (void)
+{
+switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
+	case MATIGSALUG:
+		SayMatigsalugText (FALSE, "Egpatey a kuntee."); break;
+#endif
+	default: // default to English
+		SayEnglishText (FALSE, "I'm powering myself off now."); break;
+	}
+SetPowerAuto (FALSE);
+setbase_power(BASE_POWER_OFF);
+sendir_standbymsg ();
+}
+/* End of DoStandbyPowerDown */
 
 
 /*****************************************************
@@ -264,7 +301,8 @@ BOOL LCChanged;
 LCChanged = FALSE;
 
 // temp
-LightLevel = (U8)rndrange (150, 255);
+//LightLevel = (U8)rndrange (150, 255);
+LightLevel = 255; // .... temp xxxxxxxxxx Assume it's always bright
 if (LightsControlAuto)
 	{
 	if ((getbase_lights()!=BASE_LIGHTS_NORMAL) && LightLevel > HIGH_LIGHT_THRESHOLD)
@@ -273,9 +311,11 @@ if (LightsControlAuto)
 		setbase_lights (BASE_LIGHTS_NORMAL);
 		if (Verbosity == VERBOSITY_TALKATIVE)
 			switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 				case MATIGSALUG:
 					SayMatigsalugText (FALSE, "Eg-ebukan ka sulu su malayag e.");
 					break;
+#endif
 				default: // default to English
 					SayEnglishText (FALSE, "Getting bright so switched off headlight.");
 					break;
@@ -287,9 +327,11 @@ if (LightsControlAuto)
 		LCChanged = TRUE;
 		if (Verbosity == VERBOSITY_TALKATIVE)
 			switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 				case MATIGSALUG:
 					SayMatigsalugText (FALSE, "Egpasiha te sulu su marukilem e kuntee.");
 					break;
+#endif
 				default: // default to English
 					SayEnglishText (FALSE, "Getting dark so switched on headlight.");
 					break;
@@ -321,9 +363,11 @@ if (PowerControlAuto)
 		setbase_power (BASE_POWER_NORMAL);
 		PCChanged = TRUE;
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (FALSE, "Eleg e ka kuriyinti.");
 				break;
+#endif
 			default: // default to English
 				SayEnglishText (FALSE, "Power returned to normal.");
 				break;
@@ -334,9 +378,11 @@ if (PowerControlAuto)
 		setbase_power (BASE_POWER_LOW);
 		PCChanged = TRUE;
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (FALSE, "Kulang e ka kuriyinti te batiriya.");
 				break;
+#endif
 			default: // default to English
 				SayEnglishText (FALSE, "Battery power low.");
 				break;
@@ -397,8 +443,10 @@ void InitControls (void)
 {
 SetPowerAuto (TRUE);
 SetLightsAuto (TRUE);
+AutoOff = TRUE;
 
 ActionNewBatteryLevel (BATTERY_NORMAL_LEVEL); // start by assuming it's normal
+BatteryCharging = FALSE;
 ActionNewChargingLevel (1); // assume not charging
 
 setbase_power (BASE_POWER_NORMAL);
@@ -420,26 +468,28 @@ UpdateControls ();
 
 void ActionNewBatteryLevel (U8 anblLevel)
 {
-printf (" ActionNwBattLvl ");
+//printf (" ActionNwBattLvl ");
 
 // Check if the battery level has changed
 if (anblLevel != BatteryLevel)
 	{
 	BatteryVoltage = (float)anblLevel / BATTERY_CALIBRATION_FACTOR;
 	BatteryLevel = anblLevel;
-#if 1	
-	printf ("Temp Code: Battery level is %u or %.1f volts.", BatteryLevel, BatteryVoltage);
+#if 0
+	printf ("Temp Code: Battery level is %.1f volts.", BatteryVoltage);
 	//sprintf (MakeupSpeakString, "Temp Code Battery level is %u or %.1f volts.", BatteryLevel, BatteryVoltage);
 	//SayMakeupSpeakString (TRUE);
 #endif
 	if (UpdatePowerControl () && DiagnosticMode) {
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
-				sprintf (MakeupSpeakString, "%u ka batiriya ne %.1f vult.", BatteryLevel, BatteryVoltage);
+				sprintf (MakeupSpeakString, "%.1f vult ka batiriya.", BatteryVoltage);
 				SayMakeupSpeakString (FALSE);
 				break;
+#endif
 			default: // default to English
-				sprintf (MakeupSpeakString, "Battery level is %u or %.1f volts.", BatteryLevel, BatteryVoltage);
+				sprintf (MakeupSpeakString, "Battery level is %.1f volts.", BatteryVoltage);
 				SayMakeupSpeakString (FALSE);
 				break;
 			}
@@ -462,7 +512,7 @@ void ActionNewChargingLevel (U8 anclLevel)
 {
 float LastChargingVoltage;
 	
-printf (" ActionNwChrgLvl ");
+//printf (" ActionNwChrgLvl ");
 
 // Check if the charging level has changed
 if (anclLevel != ChargingLevel)
@@ -472,32 +522,40 @@ if (anclLevel != ChargingLevel)
 	ChargingLevel = anclLevel;
 	if (LastChargingVoltage < NOT_CHARGING_THRESHOLD && ChargingVoltage >= CHARGING_THRESHOLD)
 		{ // Just started charging
+		BatteryCharging = TRUE;
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (FALSE, "Egkatahuan e te kuriyinti ka batiriya.");
 				break;
+#endif
 			default: // default to English
 				SayEnglishText (FALSE, "Battery now charging.");
 				break;
 			}
 		if (DiagnosticMode)
 			switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 				case MATIGSALUG:
 					sprintf (MakeupSpeakString, "%.1f ka kuriyinti.", ChargingVoltage);
 					SayMakeupSpeakString (FALSE);
 					break;
+#endif
 				default: // default to English
-					sprintf (MakeupSpeakString, "Charging level is %u or is %.1f volts.", ChargingLevel, ChargingVoltage);
+					sprintf (MakeupSpeakString, "Charging level is %.1f volts.", ChargingVoltage);
 					SayMakeupSpeakString (FALSE);
 					break;
 				}
 		}
 	else if (LastChargingVoltage >= CHARGING_THRESHOLD && ChargingVoltage < NOT_CHARGING_THRESHOLD)
 		{ // Just finished charging
+		BatteryCharging = FALSE;
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (FALSE, "Kenad egkatahuan te kuriyinti ka batiriya.");
 				break;
+#endif
 			default: // default to English
 				SayEnglishText (FALSE, "Disconnected from charger.");
 				break;
@@ -546,6 +604,7 @@ if (SwitchState == SWITCH_DOWN)
 	{
 	if (SwitchID>=LOWEST_BUMPER_SWITCH && SwitchID<=HIGHEST_BUMPER_SWITCH)
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (TRUE, "Etuwey!");
 				if (DiagnosticMode) {
@@ -553,6 +612,7 @@ if (SwitchState == SWITCH_DOWN)
 					SayMakeupSpeakString (FALSE);
 					}
 				break;
+#endif
 			default: // default to English
 				SayEnglishText (TRUE, "Ouch!");
 				if (DiagnosticMode) {
@@ -563,6 +623,7 @@ if (SwitchState == SWITCH_DOWN)
 			}
 	else if (SwitchID>=LOWEST_TILT_SWITCH && SwitchID<=HIGHEST_TILT_SWITCH)
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (TRUE, "Etuwey!");
 				if (DiagnosticMode) {
@@ -570,6 +631,7 @@ if (SwitchState == SWITCH_DOWN)
 					SayMakeupSpeakString (FALSE);
 					}
 				break;
+#endif
 			default: // default to English
 				SayEnglishText (TRUE, "Help!");
 				if (DiagnosticMode) {
@@ -584,6 +646,7 @@ else // must be up
 	assert (SwitchState==SWITCH_UP);
 	if (SwitchID>=LOWEST_BUMPER_SWITCH && SwitchID<=HIGHEST_BUMPER_SWITCH)
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (TRUE, "Meupiya!");
 				if (DiagnosticMode) {
@@ -591,6 +654,7 @@ else // must be up
 					SayMakeupSpeakString (FALSE);
 					}
 				break;
+#endif
 			default: // default to English
 				SayEnglishText (TRUE, "Good!");
 				if (DiagnosticMode) {
@@ -601,6 +665,7 @@ else // must be up
 			}
 	else if (SwitchID>=LOWEST_TILT_SWITCH && SwitchID<=HIGHEST_TILT_SWITCH)
 		switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 			case MATIGSALUG:
 				SayMatigsalugText (TRUE, "Meupiya!");
 				if (DiagnosticMode) {
@@ -608,6 +673,7 @@ else // must be up
 					SayMakeupSpeakString (FALSE);
 					}
 				break;
+#endif
 			default: // default to English
 				SayEnglishText (TRUE, "Phew!");
 				if (DiagnosticMode) {
@@ -638,9 +704,11 @@ void ActionStoppedMoving (bool WasGoingForwards, bool CompletedGo)
 
 if (CompletedGo) // stopped because completed (not because of a switch activating)
 	switch (CurrentOutputLanguage) {
+#ifdef INCLUDE_MATIGSALUG
 		case MATIGSALUG:
 			SayMatigsalugText (FALSE, "Neimpusan e.");
 			break;
+#endif
 		default: // default to English
 			SayEnglishText (FALSE, "Command completed.");
 			break;

@@ -10,8 +10,8 @@
 *	Author: Robert Hunt
 *	Created: November 2000
 *
-*	Mod. Number: 9
-*	Last Updated: 24 August2001
+*	Mod. Number: 10
+*	Last Updated: 11 November 2001
 *	Updated by: Robert Hunt
 *
 ******************************************************/
@@ -120,9 +120,10 @@
 #define IR_R_MANUAL IR_R8_C3
 #define IR_R_AUTO IR_R8_C4
 #define IR_R_DIAGNOSTICS IR_R9_C1
-#define IR_R_AUTOSTOP IR_R9_C2
-#define IR_R_TRAVEL_MODE IR_R9_C3
-#define IR_R_FRONT_BACK_MODE IR_R9_C4
+#define IR_R_SPECIAL IR_R9_C2
+//#define IR_R_AUTOSTOP IR_R9_C2
+//#define IR_R_TRAVEL_MODE IR_R9_C3
+//#define IR_R_FRONT_BACK_MODE IR_R9_C4
 #define IR_R_HELP IR_R10_C1
 #define IR_R_MODE IR_R10_C2
 #define IR_R_POWER IR_R10_C3

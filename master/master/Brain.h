@@ -9,8 +9,8 @@
 *	Author: Robert Hunt
 *	Created: August 2001
 *
-*	Mod. Number: 16
-*	Last Modified: 8 October 2001
+*	Mod. Number: 17
+*	Last Modified: 5 November 2001
 *	Modified by: Robert Hunt
 *
 ******************************************************/
@@ -83,6 +83,7 @@ void UpdateBrain (void); /* Checks for what needs doing */
 char *GetSwitchName (U16 SwitchID);
 
 void Greet (void);
+void TellName (void);
 void TellVersion (void);
 
 void TellPower (void);
