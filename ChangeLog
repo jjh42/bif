@@ -1,24 +1,26 @@
-2002-11-06  Jonathan Hunt <jhuntnz@users.sourceforge.net>
+2002-11-17  Jonathan Hunt <jhuntnz@users.sourceforge.net>
 
+	* patches.php: Added portage build for kmasqdialer.
+
+2002-11-06  Jonathan Hunt <jhuntnz@users.sourceforge.net>
 	* doupdate: Correct piping to /dev/null
 	* patches.php: Added portage build for khrono.
-
 2002-10-31  Jonathan Hunt <jhuntnz@users.sourceforge.net>
 	* patches.php: Added cervisia patch description.
 	* fetch_projnews: Added summaries to news.
 2002-10-30  Jonathan Hunt <jhuntnz@users.sourceforge.net>
 	* doupdate: First add.
 2002-10-30  Jonathan Hunt <jhuntnz@users.sourceforge.net>
-	* about.php: Changed $id$ to $Id: ChangeLog,v 1.7 2002/11/06 05:00:57 jhuntnz Exp $ so it works.
+	* about.php: Changed $id$ to $Id: ChangeLog,v 1.8 2002/11/17 02:52:30 jhuntnz Exp $ so it works.
 	* common.inc: Change the </a> for top to right at the
 	  top to make it display properly in konqueror.
-	* history.php: Changed $id$ to $Id: ChangeLog,v 1.7 2002/11/06 05:00:57 jhuntnz Exp $ so it works.
-	* index.php: Changed $id$ to $Id: ChangeLog,v 1.7 2002/11/06 05:00:57 jhuntnz Exp $ so it works.
-	* links.php: Changed $id$ to $Id: ChangeLog,v 1.7 2002/11/06 05:00:57 jhuntnz Exp $ so it works.
+	* history.php: Changed $id$ to $Id: ChangeLog,v 1.8 2002/11/17 02:52:30 jhuntnz Exp $ so it works.
+	* index.php: Changed $id$ to $Id: ChangeLog,v 1.8 2002/11/17 02:52:30 jhuntnz Exp $ so it works.
+	* links.php: Changed $id$ to $Id: ChangeLog,v 1.8 2002/11/17 02:52:30 jhuntnz Exp $ so it works.
 		     Added link for kate.
 	* navbar.inc: Added link for patches.php.
 	* patches.php: First add.
-	* tech.php: Changed $id$ to $Id: ChangeLog,v 1.7 2002/11/06 05:00:57 jhuntnz Exp $ so it works.
+	* tech.php: Changed $id$ to $Id: ChangeLog,v 1.8 2002/11/17 02:52:30 jhuntnz Exp $ so it works.
 2002-10-28  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
 	* fetch_projlinks: First add.
 	* fetch_projnews: First add.

@@ -17,6 +17,23 @@ We make no guarantee as to how great these patches are. There aren't very many
 at the moment but we will be adding more as they come up.
 </p>
 
+<H3> Portage Packages </H3>
+Last updated 17 November 2002
+<p>
+Since I run Gentoo Linux and do some development for microcontrollers and other strange stuff
+it isn't unusual to come across strange programs that I want to install on my computer. When
+I have time I make a portage install file (which are really easy to make.) I usually submit
+these to Gentoo but it has a bit of a waiting list. Right now I have ebuilds for the following
+packages: <BR>
+<ul>
+<li><a href="http://cook.sourceforge.net">Cook Preprocessor</a></li>
+<li><a href="http://sources.redhat.com/binutils"> GNU Binutils for the AVR</a></li>
+<li><a href="http://khrono.sourceforge.net">Khrono</a> - a KDE Stopwatch Application</li>
+<li><a href="http://www.stephan.co.uk/kmasqdialer/download.html">KMasqdialer</a> A Masqdialer client for KDE </li>
+</ul>
+
+See <a href="portage/README"> the README </a> for more info on how to use these ebuilds.
+</p>
 
 <H3> Cervisia patch </H3>
 31 October 2002
@@ -29,23 +46,6 @@ been submitted to the cervisia maintainer.
 <br>
 To apply you'll need the cervisia source (which you can checkout from the KDE CVS server).
 Change to the cervisia directory and apply <a href="stuff/cervisia.patch">this patch</a>.
-</p>
-
-<H3> Portage Packages </H3>
-30 October 2002
-<p>
-Since I run Gentoo Linux and do some development for microcontrollers and other strange stuff
-it isn't unusual to come across strange programs that I want to install on my computer. When
-I have time I make a portage install file (which are really easy to make.) I usually submit
-these to Gentoo but it has a bit of a waiting list. Right now I have ebuilds for the following
-packages: <BR>
-<ul>
-<li><a href="http://cook.sourceforge.net">Cook Preprocessor</a></li>
-<li><a href="http://sources.redhat.com/binutils"> GNU Binutils for the AVR</a></li>
-<li><a href="http://khrono.sourceforge.net">Khrono</a> - a KDE Stopwatch Application</li>
-</ul>
-
-See <a href="portage/README"> the README </a> for more info on how to use these ebuilds.
 </p>
 
 <H3> Portage Size </H3>
@@ -86,6 +86,6 @@ gives kwrite and kdevelop syntax hightlighting for it as well.
 
 <?
 
-common_end("\$Id: patches.php,v 1.3 2002/11/06 05:00:57 jhuntnz Exp $");
+common_end("\$Id: patches.php,v 1.4 2002/11/17 02:52:30 jhuntnz Exp $");
 
 ?>
