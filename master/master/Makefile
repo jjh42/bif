@@ -28,7 +28,7 @@ ALLOBJS = \
 
 RM = rm -f
 
-all:	prebuild posix
+all:	prebuild sounds.h posix
 
 prebuild: dirs
 
@@ -59,9 +59,18 @@ posix: $(POSIXOUT) posixextras
 $(POSIXOUT): $(POSIXOBJS) 
 	$(POSIXLINK) $(POSIXOBJS) -o $(POSIXOUT)
 
+
 %.o: %.c
 	$(POSIXDEPS) $(POSIXINCLUDES) $(POSIXDEFINES) $< > .deps/$*.posix.d
 	$(POSIXCC) $(POSIXINCLUDES) $(POSIXDEFINES) -c $< -o $@
+
+# Grab sound files automagically from where there are in linuxtoavr
+LINUXTOAVR=../../spsynth/linuxtoavr/linuxtoavr
+sounds_%.c: $(LINUXTOAVR)/sounds_%.c
+	cp $< .
+sounds.h: $(LINUXTOAVR)/sounds.h
+	cp $< .
+
 
 posixextras: readslavecomms holdopen
 

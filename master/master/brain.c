@@ -55,7 +55,7 @@ void brain_c () { }
 #include "slave-base.h"
 #include "control.h"
 #include "mytime.h"
-#include "lcd.h"
+#include "LCD.h"
 
 
 const char *BrainNameString[] = {

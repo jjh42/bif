@@ -244,7 +244,7 @@ switch (SubsystemID) {
 	}
 if (BlankFill)
 	while (strlen(DisplayString) < MaxLength)
-		strcat (DisplayString, " ");
+		strcat (((char *)DisplayString), " ");
 assert (strlen(DisplayString)<=MaxLength); // Could be wrong if have other command characterss
 BufferLCDString (DisplayString);
 LCDLastUpdateTime[SubsystemID] = getmsectimer(); // Remember when we did this
