@@ -1,3 +1,8 @@
+2002-10-28    <jhunt@jaja>
+
+	* fetch_projlinks: First add.
+	* fetch_projnews: First add.
+
 2002-10-21  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
 
 	* Added *. First import.
