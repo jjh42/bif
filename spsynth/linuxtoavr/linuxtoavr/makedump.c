@@ -290,7 +290,7 @@ badheader:;
 		*storepointer++ = code;
 	}
 	/* We are done with the sound file */	
-	fclose(soundfile);	
+	fclose(soundfile);
 	// Check that we used the expected amount of room		
 	if(storepointer != (datapointer + length)) {
 		Failure();
@@ -334,7 +334,7 @@ BOOL open_header_file()
 		printf( "\tError opening header file %s\n", HEADER_FILE_NAME);	
 		return FALSE;
 	}
-	
+
 	/* Print the "header" of the header file */
 	fprintf(header_file,
 		"/* This file is made automatically by linuxtoavr\n"
@@ -373,7 +373,7 @@ BOOL open_header_file()
 FILE *open_input_file()
 {
 	FILE *input_file;
-		
+
 	printf("Opening input file");
 	/* Now open the file. */
 	if((input_file = fopen(INPUT_FILE_NAME, "r")) == NULL) {
@@ -381,7 +381,7 @@ FILE *open_input_file()
 		printf( "\tError opening input file %s\n", INPUT_FILE_NAME);
 		return NULL;
 	}
-	
+
 	Success();
 	return input_file;
 }
@@ -491,7 +491,7 @@ Exit:
 	/* Write the ending on the header file */
 	fprintf(header_file,
 		"\n"
-		"#endif _LINUX_TO_AVR_SOUNDS_H\n");
+		"#endif /* _LINUX_TO_AVR_SOUNDS_H */\n");
 	/* And close it. */
 	fclose(header_file);
 	fclose(include_file);

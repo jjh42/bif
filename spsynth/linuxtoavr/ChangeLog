@@ -1,3 +1,8 @@
+2002-11-07  Jonathan Hunt <jhuntnz@users.sourceforge.net>
+
+	* makedump.c: Added comment to #endif in sounds.h 
+	  generated file to remove warning.
+
 2002-09-17  Jonathan Hunt  <jhuntnz@users.sf.net>
 	* config.sub: Added. Was lost en-route to Sf.
 	* config.guess: Added. Was lost en-route to Sf.
@@ -5,7 +10,6 @@
 	   and hen_em so it works under C.
 	* hen?em: Renamed
 	* hep?at: Renamed
-
 2001-10-16  Jonathan Hunt  <jhuntnz@users.sf.net>
 	* lex.l: Added - as a valid character.
 	* makedump.c: Removed use of sizeof(flash_buffer)
