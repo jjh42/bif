@@ -1,0 +1,82 @@
+Dynamic C is not ANSI C. In fact its enough different to cause quite a few problems
+with keeping code portable. This file explains the hacks that are done to make
+the code compile under both Dynamic C and real compilers.
+
+The following limitations are place on code by Dynamic C:
+
+- All initialized data must be intended to be a constant and to eliminate warnings must
+  be prefaced by const. This includes data inside a subroutine. E.g int i = 0; doesn't
+  work. You must put it in two statements (int i; i = 0;).
+- All declarations must be at the beginning of a subroutine. They don't work inside
+  a block of code.
+- Const can only be used for constant data. Parameters cannot be declared const. Also
+  a item in a structure cannot be constant. To get around this use constparam. When
+  compiling for a real compiler it would be defined as const, for the Rabbit it will
+  be defined as nothing.
+
+Linking:
+
+In theory Dynamic C linking should be simple. In practice, to keep compatible with ANSI C
+its a mess. #include is ignored in Dynamic C. All the header and C files should have a
+#use directive in master.c. All the header files should have their contents between
+/*** Beginheader */ and /*** endheader */ comments for them to work properly in Dynamic C.
+The C files are a real mess. Each C file begins with something like this:
+
+
+/* Dummy headers for Dynamic C */
+/*** Beginheader brain_c */
+#ifdef TARGET_RABBIT
+void brain_c();
+
+#asm
+XXXbrain_c:	equ	brain_c
+#endasm
+
+#endif /* TARGET_RABBIT */
+/*** endheader */
+
+
+#ifdef TARGET_RABBIT
+void brain_c () { }
+#endif /* TARGET_RABBIT */
+
+
+This is to make it link properly with Dynamic C. The equ in the assembly statement forces
+the c file to be included. Without it you get linking errors.
+
+See header_template and cpp_template for and example of this.
+
+XMEMORY:
+
+Xmemory is a real mess in Dynamic C. Just in case you couldn't figure it out from
+their documentation they provide two ways of putting something in xmemory.
+xstring name { } accepts only quoted strings. It declares an array of longs in
+xmemory which point to strings that are in xmemory. The name is used to declare
+a long in root which contains a pointer to the table.
+
+Xdata just declares something is xmemory with no type checking. Strings declared
+inside an xdata section are just put in xmemory verbatim. Note: If inside an xdata
+you put pointers to previously declared xdata or xstring sections, it will make
+a table of 16-bit pointers to longs in root which contain the pointer to the table.
+See english.c for an example.
+
+To make it easier to be portable the following things are defined in compat.h.
+XSTRING(name)           Declares a string list.
+XDATA(name)             Declares a xdata list.
+XSINGLESTRING(name)     Under rabbit XDATA and this are the both xdata.
+                        Because of the way C works declaring a string inside
+                        XDATA on ANSI C will give a pointer to the string,
+                        not the string. This stops that happening.
+xmem_ptr_t              Pointer to someting in xmem.
+const_xmem_ptr_t        Pointer to a constant in xmem.
+deref_xmem(type, ptr)   Returns a variable of type gotten from dereferencing ptr
+                        which should be a xmem_ptr_t.
+deref_xmem_ptr(ptr)     Shorthand for deref_xmem(xmem_ptr_t, ptr).
+XPTR_SIZE               A definition of the size of a xmem pointer. Used for
+                        incrementing etc.
+XACCESS(array, index)   Access an XSTRING array at index. Returns an xmem_ptr_t
+                        with a pointer to the string at index.
+
+If anyone ever rights a free ANSI C compiler for the Rabbit please let me know.
+If you are using Dynamic C too, good luck. Let me know if you find any shortcuts.
+

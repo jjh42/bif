@@ -1,0 +1,12 @@
+#! /bin/sh
+
+# Export the file definitions
+
+# Master file definitions
+export SLAVE_COMMS_READ_FILE=3
+export SLAVE_COMMS_WRITE_FILE=4
+
+# readslavecomms definitions
+export RSC_IN_FILE=3
+export RSC_OUT_FILE=4
+

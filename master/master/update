@@ -1,0 +1,38 @@
+#! /bin/sh
+
+# This is a shell script for keeping the Windows files in sync with
+# the file under linux.
+# Its a bit of a mess.
+
+TO=/mnt/windows/Jonny/rabbitmaster/
+TOPLEVELFILES="../../version.h ../../comms.h"
+LIBFILE="/mnt/windows/Progra~1/DCRABBIT_704SE4/lib.dir"
+
+# This is a script to keep the rabbitmaster in sync with this directory
+cp -u $TOPLEVELFILES $TO
+cp -u *.c *.h $TO
+echo `pwd`
+THISDIR=`pwd`
+cd $TO && cp -u *.c *.h $THISDIR
+cd $TO && cp -u version.h comms.h $THISDIR/../..
+cd $THISDIR
+rm -f version.h comms.h
+cd $THISDIR
+cp -u $LIBFILE lib.dir
+cp -u lib.dir $LIBFILE
+cat lib.dir | tr -d \\r >lib.dir.tmp
+rm -f lib.dir
+mv lib.dir.tmp  lib.dir
+for i in *.c *.h; do
+    echo $i
+    cat $i | tr -d \\r >$i.tmp
+    rm -f $i
+    mv $i.tmp $i
+done    
+
+for i in $TOPLEVELFILES; do
+    cat $i | tr -d \\r >$i.tmp
+    rm -f $i
+    mv $i.tmp  $i
+done    
+

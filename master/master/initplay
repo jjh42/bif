@@ -1,0 +1,24 @@
+#! /bin/sh
+
+# exit 0;
+cd $(dirname $0)
+
+# Clean up our last mess
+#killall -KILL sox play initplay playsound holdopen
+
+# First to make sure play doesn't die we must open the soundfifo and hold
+# it open all the time.
+
+if [ ! -e soundfifo ]; then
+    mkfifo soundfifo
+fi
+
+
+# Dummy fifo is just to make cat block
+#cat >soundfifo <dummyfifo&
+
+# Now start playing sounds. Go round in a infinite loop because 
+# play keeps dying when the fifo is close on the other end.
+./holdopen soundfifo | play -t raw --format=s --rate=8000 --size=b --silent - &
+# >test.out &
+

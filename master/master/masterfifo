@@ -1,0 +1,16 @@
+#! /bin/bash
+
+# First go to the directory where are executable is
+cd $(dirname $0)
+# Setup the two fifos for the slave
+if [ ! -e slavecommstx ]; then
+    mkfifo slavecommstx
+fi
+
+if [ ! -e slavecommsrx ]; then
+    mkfifo slavecommsrx
+fi
+
+./master $* 3<slavecommsrx 4>slavecommstx
+
+

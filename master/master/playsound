@@ -1,0 +1,20 @@
+#! /bin/sh
+
+# This is a shell script to simply playing a sound from linuxtoavr
+# Master uses it to play sounds when running under linux.
+
+if [ ! $# = 1 ]; then
+echo Usage: $0 item
+exit 1
+fi
+
+# First go to the directory where master should be
+cd $(dirname $0)
+cd ../../spsynth/linuxtoavr/linuxtoavr
+
+#echo Play $1 
+
+./linuxtoavr --play $1 --stdio >../../../master/master/soundfifo
+#play -t raw --format=s --rate=8000 --size=b --silent ../../../master/soundfifo
+#| ../../../master/master/a.out ../../../master/master/soundfifo
+#| play -t raw --format=s --rate=8000 --size=b --silent -

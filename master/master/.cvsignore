@@ -1,0 +1,11 @@
+.deps
+*.o
+master
+readslavecomms
+slavecommsrx
+slavecommstx
+to
+temp
+temp.tr
+holdopen
+soundfifo

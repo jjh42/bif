@@ -1,0 +1,268 @@
+2001-10-14  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* slave-base.c: Changed switch message to 'Z'.
+
+2001-10-01  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* slavecomms.c: Added ioslave.
+	* slave-io.*: First add.
+	* speak.c: Capitalise #include "Brain.h".
+
+2001-09-27  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* slave-speech.c: Added a fix for a bug that when under
+	  posix there was 0xff in the sounds to play it skipped
+	  a few sounds after the 0xff.
+	* initplay: Fixed typo.
+
+2001-09-26  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* compat.h: Added #define nodebug for non-rabbit compilers.
+	* computercontrol.c: Added testenglish command.
+	* holdopen.c: First add.
+	* initplay: First add.
+	* masterfifo: Added a cd $(dirname $0) so that they work even if
+	  run outside of master.
+	* masternosc: Likewise.
+	* readsc: Likewise.
+	* playsound: First add.
+	* posixthreads.c: Made thread_yield() do usleep(1) instead of 
+	  sleep(0) which seemed to do nothing.
+	* slave-base.c: Fixed bug with go message. Now subtract angle
+	  from 360 if it is over 180.
+	* slave-speech.c: Added support for playing sounds in POSIX.	
+
+2001-09-24  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* compat*: Made a REAL_COMPILER section in compat.h
+	  and put the duplicate stuff from compat-posix.h and
+	  compat-win32.h into it.
+	* README.DynamicC: Added a section on the joys of xmemory.
+
+2001-09-24  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* compat-posix.h: Added XPTR_SIZE.
+	* english.c: Got working again under POSIX.
+	* matigsalug.c: Worked on so it might work on the rabbit.
+	* soundcontrol.h: Got working again under POSIX.
+	* sounds.h: Regenerated.
+	* sounds_*.c: Likewise.
+
+2001-09-23  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* brain.c: Moved XSTRING outside of function.
+	* help.c: Likewise
+	* ircontrol.c: Likewise.	
+	* tell.c: Likewise.
+	* compat-rabbit.h: Added more xmem stuff.
+	* comapt-posix.h: Likewise.
+	* matigsalug.c: Some bug fixes.
+	* english.c: Works now I think.
+	* soundcontrol.h: Got working under rabbit.
+	* sounds_*.c: Likewise.
+	
+
+
+2001-09-21  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* alloc.c: Increased root dynamic memory space from 2K to 3K.
+	* compat-posix.h: Added XSTRING and XDATA.
+	* english.c: Converted back to old tables except using XDATA.
+	* matigsalug.c: Likewise.
+	* soundcontrol.h: Likewise
+	* sounds_*.c: Updated from generated version.
+	* lib.dir: Added sounds_*.c to list.	
+	* masternosc: Added a pipe from /dev/urandom for slavecomms
+	  so it frees up dynamic memory.
+	
+2001-09-20  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* compat-posix.h: Added some more xmem stuff.
+	* english.c: Converted to using the new tables in their
+	  own files instead of including them. Changed the including
+	  tables to being place in xmem.
+	* matigsalug.c: Likewise.
+	* speak.h: Removed declarations of tables.
+	* soundscontrol.h: Added.
+	* sounds.h: Updated.
+	* sounds_*.c: Likewise. Renamed them all to uppercase.
+	
+
+2001-09-15  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* compat-*.h: Changed XMEM_PTR to xmem_ptr_t.
+	* computercontrol.*: Added getcomputerchar to work with
+	  cooperative threading.
+	* english.c: Got rid of warnings.
+	* matigsalug.c: Likewise.
+	* speak.c: Likewise.
+	* master.c: Added a thread_yield() in the main loop.
+	* rabbitthreads.c: Got working finally.
+	* slavecomms.c: Changed to work with threading.
+
+2001-09-14  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* compat-posix.h: Made xmem const char * to avoid warnings.
+	* threads.h: Made the new thread scheme.
+	* posixthreads.c: Implemented new thread scheme.
+	* rabbithreads.c: Likewise. Unfinished.
+	* computercontrol.c: Changed to new thread scheme.
+	* slavecomms.c:	Likewise.	
+
+2001-09-13  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* brain.c: Changed to using isbase_moving() rather than
+	  waiting for 10s in random mode.
+	* compat-posix.h: Started moving english.c and matigsalug.c
+	  to using xmem tables.
+	* posixmain.c: Likewise.
+	* english.c: Likewise.
+	* matigsalug.c: Likewise.
+	* control.*: Added ActionBaseStopped.
+	* mytime.h: Fixed bug with POSIX version.		
+	* sounds_E.c: Renamed from sounds_e.c.
+	* sounds_*.c: Added "beginheader" to them to try and make them
+	  work with Dynamic C.
+
+2001-09-13  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* *.h *.c: Fixed various bugs. Works somewhat on 
+	  the rabbit now.
+	* lib.dir: Added io.*.
+
+2001-09-12  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* mytime.*: First add. Added compatibilty layer
+	  for time stuff.
+	* brain.c: Changed to using mytime compatibility.
+	* ircontrol.c: Likewise.
+	* commonsubs.c: Got rid of some warnings.
+
+2001-09-11  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* commonsubs.*: Added printhex*.
+	* alloc.c: Fixed bug with ialloc on rabbit.
+	* computercontrol.c: Added entry for raw mode 
+	  for slave comms.	
+	* slavecomms.c: Fixed some bugs on rabbit. Mostly works.
+	  Added raw mode slave comms.
+	* slave-*: Converted to using printhex instead of printf
+	  because of problem with printf on rabbit.	
+
+2001-09-10  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* compat-posix.h: Added S32 and U32.
+	* compat-rabbit.h: Likewise
+	* commonsubs.*: Added gethex* to replace the use of
+	  sscanf for intepreting slave messages.
+	* ialloc.*: Added.
+	* slave-*: Converted slaves to using gethex*. Also
+	  changed to use ialloc and ifree.
+	* slavecomms.c: Likewise
+	* rabbitthreads.c: Added support for threads on the rabbit.
+
+2001-09-09  Jonathan Hunt  <jhuntnz@users.sf.net>
+	
+	* *.c *.h: Modified all files slightly to work with
+	  Dynamic C.
+	* README.DynamicC: Added a explanations of the hacks
+	  done to work with Dynamic C.
+	* README: Removed the comment about it not compiling
+	  for the rabbit yet.
+	* update: Shell script to synchronise Windows files
+	  with linux ones. Moves things around too.
+
+
+2001-09-06  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* computercontrol.c: Because of new tty stuff added
+	  support for backspace.
+	* master.c: Added code to initialize the
+	  tty so that irmode work properly (ie doesn't wait
+	  for enter before processing input).
+	* readslavecomms.c: Added tty initalization so that
+	  typing to the slaves works properly.
+	* posix.h: Added STDIO_IN and STDIO_OUT as file 
+	  definitions.
+
+2001-09-06  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* IRControl.h: Added a declaration of irmode.
+	* ircontrol.c: Converted the temporary main
+	  to irmode which is called by computer control.
+	* controlcontrol.*: Added the computer control
+	  code. Seems to work.
+	* master.c: Hooked up computercontrol.
+	* masternosc: Added a script for running the master
+	  and not seeing any of the slave messages.
+
+2001-09-05  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* slavecomms.c: Changed it so the dump
+	  expects a character at the beginning to 
+	  tell it the type of dump.
+
+2001-09-05  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* AUTHORS: Added Dad's name.
+	* INSTALL: Removed the generic instructions which
+	  don't make sense here.
+	* README: Add a bit more about the master.
+	* *.c *.h: Changed almost all files to make
+	  everything compile together. Now everything compiles
+	  and links with few errors under linux. Most things
+	  have been hooked up.
+
+2001-09-04  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* slave-speech.*: Renamed say to saysounds and saychar
+	  to saysound. Added a check to empty the say queue when
+	  there is an 0xff in the say list. Changed data type
+	  from char to U8 to make it unsigned. Changed the 16
+	  to MAX_SOUNDS_SEND_AT_ONCE to make it easier to change.
+
+2001-09-04  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* master.c: Added a comment.
+	* slavecomms.c: Fixed the filename add the beginning.
+	* slave-speech.*: Added speech queueing support.
+
+2001-09-04  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* IRControl.h: Removed definition for direction
+	  IR came from.		
+	* IR.h: Added definition for direction IR came
+	  from.	
+	* master.*: Removed linked list support.
+	* commonsubs.*: Added. Put list support here.
+	* slave-ir.*: Added support for IR. Does not do
+	  anything with responses yet.
+	* slave-speech.*: Added support for speech messages
+	  other than the important one. Does not do anything
+	  with responses yet.
+	* slavecomms.*: Changed a little bit to support new
+	  slaves.
+
+2001-09-03  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* compat*: Added a few extra things to.
+	* llslavecomms.*: Renamed to...
+	* slavecomms.* : Added. Slave comms now seem to work.
+	* master.*: Modified to call slavecomms.
+	* masterfifo: Added
+	* posix*: Changed to support slavecomms.	
+	* slave-*: Added to support bases.	
+	* threads.h: Added support for mutexes.
+
+2001-09-02 Robert
+	* Added and commited lots of files to start pulling 
+	  master code together
+
+2001-08-31  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* Added lots of files to begin master.
+	* masterfifo and readsc now work together.
+
+
+
+

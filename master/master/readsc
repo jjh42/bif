@@ -1,0 +1,6 @@
+#! /bin/sh
+
+# First go to the directory where are executable is
+cd $(dirname $0) 
+./readslavecomms 4>slavecommsrx 3<slavecommstx
+

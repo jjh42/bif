@@ -1,0 +1,11 @@
+#! /bin/sh
+
+# First go to the directory where the executable is
+cd $(dirname $0)
+
+# Run the master with no slave comms
+# Give slave input pseudo random numbers so it a leasts
+# empties it messages and frees up the dynamic memory.
+
+./master $* 4>/dev/null 3</dev/urandom
+
