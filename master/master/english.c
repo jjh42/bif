@@ -1623,7 +1623,7 @@ void HaveSpecial (void)
 			SayASCII (Char);
 		else if (Char == ',')
 			QueueSound (WordPause[0]); // Presumably there will also be another word pause for the space
-		else if (Char == '.' || Char == ':' || Char == ';')
+		else if (Char == '.' || Char == ':' || Char == ';' || Char == '!')
 			QueueSound (SentencePause[0]);
 		else
 			SayASCII (Char);
