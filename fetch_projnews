@@ -5,6 +5,6 @@
 #       Creates a file called projnews.cache in your home directory
 #
 
-/usr/bin/wget -q -O ./projnews.tmp "http://sourceforge.net/export/projnews.php?group_id=61715&num=4&show_summaries=1"
+/usr/bin/wget -q -O ./projnews.tmp "http://sourceforge.net/export/projnews.php?group_id=61715&limit=4&flat=0&show_summaries=1"
   > /dev/null
 /bin/mv -f ./projnews.tmp ./projnews.cache

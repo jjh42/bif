@@ -18,6 +18,18 @@ at the moment but we will be adding more as they come up.
 </p>
 
 
+<H3> Cervisia patch </H3>
+31 October 2002
+<p>
+Cervisia is a KDE frontend to cvs. I use this program a fair amount and one thing that bugged
+me was the way the ChangeLog dialog was modal so I couldn't do diffs on files to see what I
+had changed when I was adding entry to the ChangeLog. This patch makes the ChangeLog modeless
+so you can do other stuff as well. The patch is against Cervisia version 1.5Rich2. It has
+been submitted to the cervisia maintainer.
+<br>
+To apply you'll need the cervisia source (which you can checkout from the KDE CVS server).
+Change to the cervisia directory and apply <a href="stuff/cervisia.patch">this patch</a>.
+</p>
 
 <H3> Portage Packages </H3>
 30 October 2002
@@ -73,6 +85,6 @@ gives kwrite and kdevelop syntax hightlighting for it as well.
 
 <?
 
-common_end("\$Id: patches.php,v 1.1 2002/10/30 07:56:11 jhuntnz Exp $");
+common_end("\$Id: patches.php,v 1.2 2002/10/31 08:56:24 jhuntnz Exp $");
 
 ?>
