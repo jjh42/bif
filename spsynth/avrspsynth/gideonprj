@@ -1,0 +1,6 @@
+<!DOCTYPE gideon ><gideon>
+ <general>
+  <projectmanagement>KDevAutoProject</projectmanagement>
+  <primarylanguage>C++</primarylanguage>
+ </general>
+</gideon>

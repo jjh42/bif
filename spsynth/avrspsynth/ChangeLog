@@ -1,0 +1,230 @@
+2001-10-26  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* Addeed tone support.
+	* Incremented version.
+	* README: Added short supplement about tones.
+
+2001-09-23  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* bugfix: Program message left comms on TxEnabled which
+	  meant it never received anything.
+
+2001-09-05  Jonathan Hunt  <jhuntnz@users.sf.net>
+	* Incremented version.
+	* Made the dump message send the dump type at 
+	  the beginning of the message.
+
+2001-08-26  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* Incremented version.
+	* bugfix: Enlarged TxBuffer to 3 for error messages.
+	* README: Added some info
+
+2001-08-25  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* Incremented version.
+	* Updated to new comms standard.
+	* README: Tried to update a bit
+
+2001-06-23  Jonathan Hunt  <jhuntnz@users.sf.net>
+	* Incremented version.
+	* Made 0xff cause it too abort whatever it is saying.
+	
+2001-06-22  Jonathan Hunt  <jhuntnz@users.sf.net>
+	* Incremented version.
+	* bugfix: It works now!
+	* Made it detect when an invalid sound is played.
+
+2001-06-14  Jonathan Hunt  <jhuntnz@users.sf.net>
+	* Incremented version.
+	* bugfix: Sounds 0x34 and 0x68 didn't work.
+
+2001-05-10  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+	* Incremented version.
+	* Converted to using the GNU GAS as the assembler.
+
+2001-05-08  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Incremented version.
+	* Made the RxBuffer size 20 so it fits a maximum length
+	  'S' message.
+	* Made it so that the PWM is initialized to 0xff.
+	* bugfix: Putting more than one sound at a time in the queue
+	  caused a problem.
+	* bugfix: Interupts should have been disabled longer in
+	  DoDecode.
+	* bugfix: No longer sends something on the SPI at the beginning.
+	* bugfix: When playing the next sound it would not check the 
+	  CompressedBuffer at the beginning.
+
+2001-05-06  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+	* Incremented version.
+	* Changed it so it does the signed to unsigned conversion
+	  in DoDecode. Also saves only the high byte which gives 
+	  room for a 20 item ToSay buffer.
+
+2001-05-05  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Incremented version.
+	* Decodes properly.
+	* bugfix: The signed samples were never converted to
+	  unsigned samples for playing.
+
+2001-05-04  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Incremented version.
+	* bugfix: In DoDecode.
+
+2001-05-03  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Incremented version.
+	* bugfix: Sending the address used RHIsr1 instead of RHSPIState
+	  to get the pointer to the right byte to send.
+	* bugfix: Fixed a bug in getting the index.
+	* bugfix: Data should be decoded high nibble first.
+
+2001-05-02  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Incremented version.
+	* bugfix: RLAddressL was set as R11 (the same as RLAddressM)
+	  which caused problems.
+
+2001-05-01  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Incremented version.
+	* bugfix: Problem in the SPI ISR that caused InvalidSPIStateErr.
+	* bugfix: Problem that stopped the last 0xff bytes of a sound
+	  from being played.
+	* bugfix: Problem with the decompression algorithm.
+
+2001-04-29  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Incremented version.
+	* bugfix: Problem in the SPI ISR.
+
+2001-04-28  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Incremented version.
+	* bugfix: The same register that was used for loading the
+	  the item to play was also used to checking the ToSay buffer
+	  count.
+
+2001-04-25  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Incremented version.
+	* bugfix: The DoDecode had an infinite loop.
+	* bugfix: SPI was not reenabled if it was playing a sound
+	  but there was nothing in the play buffer.
+	* bugfix: brcc instead of brcs set meant that it never play
+	  any sound.
+
+2001-04-24  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Incremented version
+	* bugfix: The SPI interupt never selected the flash
+	* bugfix: The SPI interupt had a bug when it got to 19 it
+	  thought it was an invalid state.
+	* bugfix: brze instead of brnz meant that SPI never got
+	  past step 19.
+
+2001-04-14  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* bugfix: The part to put stuff in the say buffer was 
+	  completely wrong.
+
+2001-04-11  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Incremented version.
+	* bugfix: The Read Flash compare was wrong.
+	* bugfix: The Test message loaded stuff from the flash
+	  high byte first which was the wrong way round.
+
+2001-04-10  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Incremented version.
+	* Cleaned up DoProgramMsg a bit.
+	* Made it so that test sends a C on completion.
+	* bugfix: Changed the commands for the flash chip so that they
+	  work for SPI.
+	* bugfix: Fixed infinite loop in test message.
+	* bugfix: Fixed infinite loop in flash dump.
+	* bugfix: Fixed exit problem with the program message.
+
+2001-04-09  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Incremented version.
+	* Error with RXTL  meant the GetUARTByte didn't work properly.
+	  It also meant that it didn't return properly.
+	* bugfix: ChipSelect was set to pin 3 instead of pin 2 so it
+	  didn't work properly.
+	* bugfix: Set memory (D) used Y instead X.
+
+2001-04-08  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Incremented version.
+	* bugfix: All the Program and Test messages for the flash
+	  never enabled Tx so everything they transmitted was lost.
+
+2001-04-06  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Incremented version.
+	* Added the ability to make a tone with the PWM
+	* Made it stop sending an H on startup.
+	* Made it possible to select the flash in flash debug
+	  mode.
+	* Add documentation of about flash debug message in README.
+	* Made it so that it will still go to sleep if there was 
+	  something in the CompresedBuffer but no room in the PlayBuffer
+	  (a common occurence).
+	* bugfix: GetUARTByte called itself instead of GetUARTChar
+	  thus creating an infinite loop.
+	* bugfix: PORTB was not set up right.
+	* bugfix: Error number was also sent as 0
+	* bugfix: GetUARTChar tested UCSRB instead of UCSRA for data.
+	* bugfix: A couple of .bytes instead of DBs meant that the Play
+	  and Compressed buffers were always thought full (this meaning
+	  it was never idle).
+	* bugfix: Set memory (D) used Y instead of X so it didn't work.
+
+2001-04-05  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+	
+	* It is now in a working state for version etc.
+	* Incremented version.
+	* Made it send a 'S' at the beginning of a big message
+	* Added a way to turn debug mode off and on over the coms
+	  (flag messag
+	* bugfix: It now sends RxMsg instead of TxMsg
+	* bugfix: Fixed a bug in clearing the RxMsg length.
+	* bugfix: A bug that if the TxBuf was full it wouldn't
+	  double return.
+	* bugfix: A bug that the Tx message was incorrectly saved
+	  in TxMsg.
+	* bugfix: An error in restoring the SPI forgot to clear
+	  the SPI status.
+	* bugfix: GetParity was called in a ISRs.
+	* bugfix: An error in checking parity GetUARTByte
+	* bugfix: Because interupts were not disabled UDR Empty
+	  would interupt before the queue was filled which caused
+	  only the message itself to be sent and stopped any more
+	  messages from ever being sent.
+	* bugfix: A return in UDR Empty Interupt caused the length
+	  never be decremented so messages would send the first nibble
+	  forever.
+
+2001-04-04  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Increment version.
+	* Several bugfixes. It now communicates with the computer
+	  and can output and dump message.
+
+2001-04-04  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* bugfix: a bug that made it never think it had received
+	  a message.
+	* Added some temporary code for checking if it receives a message
+
+2001-03-19  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* First program.
+	* bugfix: a minor bug after the program that will cause
+	  the temporary code to send an H on start up to fail.

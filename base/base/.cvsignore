@@ -1,0 +1,16 @@
+appnotes
+*.lst
+*.hex
+*.o
+*.eep
+*.out
+*.l
+*.map
+*.elf
+*.obj
+*.eep
+*.rom
+*.bak
+*.log
+*.elf?
+.deps

@@ -1,0 +1,23 @@
+This program is for programming the avrspsynth project. It works
+on *nix systems. For help run it with --help.
+
+The sounds are kept in linuxtoavr/sounds. They should be 8000hz, 16-bit
+wav files. The header file that is generated is in linuxtoavr/sounds.h and
+the input configuration file is in linuxtoavr/input.conf.
+
+To test the flash you can pass it a --play <num> replacing num with the
+number of the sound to extract. It will write 3 files in the current
+directory:
+    plain	Uncompressed of what is in the flash
+    dec		16-bit linear signed version that is the uncompressed sound.
+    hbit	8-bit linear signed version.
+    uhbit	8-bit unsigned version.
+
+
+Warning this program only works on systems that store LSB first.
+
+The input.conf file contains explanations on the format. Besides programming
+the AVR flash linuxtoavr also generates: 
+sounds.h 	- a header file with the defines of the sounds
+sounds.inc 	- like sounds.h but for the Atmel AVR assembler
+sounds_*.c	- Language tables

@@ -1,0 +1,42 @@
+This project is licensed under the GNU General Public License version 2 or
+any later version at your option. For a copy of the GPL see COPYING which
+should have been included.
+
+This is a project written by Jonathan Hunt <jhuntnz@users.sourceforge.net>
+to run on a Atmel <www.atmel.com> AVR AT90S4433 processor. This processor
+has 256 bytes of EEPROM and 128 bytes of RAM and 2048 words of flash (4k bytes).
+
+This project uses a coms protocol for the UART described in CommsProtcol.txt which
+is not included in this project.
+
+This program assembles and links successfully using GNU AVR binutils.
+
+Please report any problems or bugs to Jonathan Hunt
+<jhuntnz@users.sourceforge.net>.
+
+This is for playing sounds.
+
+This plays sounds stored in a flash buffer.
+
+
+For an explantion of the comms messages looks in comms.h. Here are a few
+longer explanations.
+
+Sd - SPI Debug Mode
+This mode allows you to send direct commands to the flash chip. You should
+send hex characters and the results will be sent back as hex chars. One
+enter reselects the chip (which was selected on start-up). Two enters
+in a row exit the test mode.
+
+Entries in the index are each 5 bytes as follows
+
+OFFSET	LENGTH	USE
+0	3	Address bytes
+3	2	Length of sound	BASE
+
+Tones:
+
+I'll try and give an explanation of how tones work. There are two types of tones.
+On send by a 'G' or Generate tone message interrupts the speech and plays and then
+the speech resumes. The other type are treated like sounds excepts they are generated
+on the fly. They are sent in a speech message. See comms.h for more details.

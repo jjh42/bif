@@ -1,0 +1,6 @@
+#! /bin/sh
+
+# Hand made configure script
+
+
+cd spsynth/linuxtoavr/ && ./configure $*

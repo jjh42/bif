@@ -1,0 +1,12 @@
+*.asm
+*.cdb
+*.lnk
+*.lst
+*.map
+*.rel
+*.rst
+*.sym
+temp.lnk
+*.ihx
+*.pp
+.deps

@@ -1,0 +1,47 @@
+2001-10-14  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* comms.h: Changed Base switch response from 'S' to 'Z'.
+
+2001-09-03  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* comms.h: Changed naming scheme. Updated slightly.
+
+2001-09-02 Robert
+	* CommsProtocol.txt Updated IR led control messages
+
+2001-08-26  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* CommsProtocol.txt: Updated with base and speech
+	  slave messages.
+	* comms.h: Changed base and speech messages to caps etc.
+
+2001-08-25  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Changed over to new comms protocol and speed.
+	* CommsProtocol.txt: Added
+	* DESIGN: Tried to update a bit
+	* README: Likewise
+	* comms.h: Added
+	* coms.h: Removed (obsolete)
+	* coms.inc: Removed (obsolete)
+	* version.h: Bumped version 0.0.1.0	
+
+* CommsProtocol.txt Updated IR led control messages
+
+2001-08-26  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* CommsProtocol.txt: Updated with base and speech
+	  slave messages.
+	* comms.h: Changed base and speech messages to caps etc.
+
+2001-08-25  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Changed over to new comms protocol and speed.
+	* CommsProtocol.txt: Added
+	* DESIGN: Tried to update a bit
+	* README: Likewise
+	* comms.h: Added
+	* coms.h: Removed (obsolete)
+	* coms.inc: Removed (obsolete)
+	* version.h: Bumped version 0.0.1.0	
+

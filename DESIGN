@@ -1,0 +1,4 @@
+This robot is designed to have a master controlling multiple slaves. For a list
+of all the slaves look in CommsProtocol.txt. The slaves vary from 8051s to Atmel AVRS.
+
+The comms protocol for communication between the slaves is described in CommsProtocol.txt.

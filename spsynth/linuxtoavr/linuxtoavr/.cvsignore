@@ -1,0 +1,16 @@
+sounds.inc
+hbit
+uhbit
+plain
+dec
+Makefile
+Makefile.in
+dump
+sounds.h
+.libs
+.deps
+linuxtoavr
+yacc.h
+lex.c
+yacc.c
+sounds_*.c

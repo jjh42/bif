@@ -1,0 +1,26 @@
+	BASE
+
+This project is licensed under the GNU General Public License version 2 or
+any later version at your option. For a copy of the GPL see COPYING which
+should have been included.
+
+This is a project written by Jonathan Hunt <jhuntnz@users.sourceforge.net>
+to run on a Atmel <www.atmel.com> AVR AT90S8515 processor. This processor
+has 512 bytes of EEPROM and RAM and 4096 words of flash (8k bytes).
+
+This project uses a coms protocol for the UART described in CommsProtcol.txt which
+is not included in this project.
+
+It was written to control the bottom of a robot. It has inputs from the
+tracks (yet to be done). It has outputs to a MM5051 which is a serial latch
+hooked up to 30 LEDs on the outside of the robot. Look in base.s for more
+details.
+
+For the most part this project functions although the go message is done on
+time at the moment. In the future I hope to change this to be done using
+feedback from the tracks. That part is waiting for the hardware.
+
+This program assembles and links successfully using GNU AVR binutils.
+
+Please report any problems or bugs to Jonathan Hunt
+<jhuntnz@users.sourceforge.net>.

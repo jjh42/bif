@@ -1,0 +1,4 @@
+This reads things out a flash buffer. It stores the compressed date in the
+CompressedBuffer. In the main loop it decompresses that data and stores it
+as uncompressed 8-bit unsigned linear sounds in the PlayBuffer. The index
+numbers of sounds that need be said are stored in the ToSay buffer.

@@ -1,0 +1,49 @@
+2001-10-15  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* Incremented version.
+	* bugfix: Go message went too far.
+	* bugfix: Sent switch message over and over.
+
+2001-09-10  Jonathan Hunt  <jhuntnz@users.sf.net>
+	* Incremented version.
+	* Made the dumps put the dump type at the beginning
+	  of their message.
+	* bugfix: Had missed out halt message is message processing
+	  so halt didn't work.
+	
+2001-08-27  Jonathan Hunt  <jhuntnz@users.sf.net>
+
+	* Incremented version
+	* Changed to new comms standard.
+	* bugfix: Go messages turned twice as far as
+	  wanted. Took out the last x2 in GetGoing.
+	* README: Update slightly
+
+2001-05-26  Jonathan Hunt  <jhuntnz@users.sf.net>
+	* Incremented version.
+	* bugfix: Go buffer didn't work properly (stw & ldw 
+	  weren't right).
+	* Modified the way it sends the switches so that it sends
+	  all the ones that were down since it was last polled.
+	* Made it clock the MM stuff in twice to fix what seems
+	  to be a problem with the chip.
+	
+2001-05-21  Jonathan Hunt  <jhuntnz@users.sf.net>
+	* Incremented version.
+	* Moved base.s to base.S and started using a C preprocessor.
+
+2001-05-12  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Incremented version.
+	* bugfix: ToggleT and ToggleC were broken.
+	* bugfix: lds instead of ldi made it never reverse
+
+2001-05-10  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+	
+	* Incremented version.
+	* Completed change to the GNU GAS for the assembler.
+
+2001-03-18  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
+
+	* Changed it to the new coms protocol where the slave ID is
+	  is sent first before the message.

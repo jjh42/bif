@@ -1,0 +1,77 @@
+# Options for all the mcs51s
+
+RM = rm -f 
+CC = sdcc
+DEP = cpp -M
+PP = cpp -E -P
+GASP = gasp
+AS = asx8051
+LD = aslink
+
+INCDIRS += -I. -I.. -I../..  -I../common -I/usr/local/share/sdcc/include
+CFLAGS = --debug -mmcs51 --model-small -DC_CODE 
+AFLAGS = -jlos
+LFLAGS = -f
+
+# Add some extra source files
+OBJS += crt0.rel comms.rel assert.rel
+LINKIN = link.scr
+
+# Source paths
+vpath %.c .
+vpath %.S .
+vpath %.scr .
+vpath %.c ../common
+vpath %.S ../common
+vpath %.scr ../common
+
+
+all: $(TARGET).ihx
+
+$(TARGET).ihx: .deps $(OBJS) $(TARGET).lnk
+	$(LD) $(LFLAGS) $(TARGET).lnk
+	
+# Make the .deps dir
+.deps:
+	mkdir .deps
+	
+# Preprocess link script
+$(TARGET).lnk: $(LINKIN) $(OBJS)
+	$(DEP) $(INCDIRS) $< > .deps/$>.d
+	$(PP) $(INCDIRS) $< | perl -e 'while(<STDIN>) { next if /^\s*$$/; print; }' > $@
+	for i in $(OBJS); do \
+		echo $$i >> $@; \
+	done
+	echo >> $@
+
+# Assembly files	
+%.rel: %.S
+	$(DEP) $(INCDIRS) $< > .deps/$*.d
+	$(PP) $(INCDIRS) $< > $*.asm
+	$(AS) $(AFLAGS) $*.asm
+
+#	echo .END >> $*.pp
+#	$(GASP) -M $*.pp > $*.asm
+
+
+# Command for C files
+%.rel: %.c
+	$(DEP) $(INCDIRS) $< > .deps/$*.d
+	$(CC) $(CFLAGS) $(INCDIRS) -c $<
+
+clean:
+	$(RM) *.asm
+	$(RM) *.cdb
+	$(RM) *.lnk
+	$(RM) *.lst
+	$(RM) *.map
+	$(RM) *.rel
+	$(RM) *.rst
+	$(RM) *.sym
+	$(RM) temp.lnk
+	$(RM) *.ihx
+	$(RM) *.pp
+	$(RM) .deps/*.d
+
+	
+-include ".deps/*.d"

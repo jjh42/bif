@@ -1,0 +1,14 @@
+.deps
+appnotes
+avrml
+Coms.inc
+coms.inc
+*.lst
+*.hex
+*.o
+*.eep
+*.obj
+*.elf
+*.l
+*.rom
+*.map

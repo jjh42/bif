@@ -1,0 +1,4 @@
+This is a project for playing speech. The AVR side of things is in avrspsynth.
+The programming is in linuxtoavr. See READMEs in these directories for instructions.
+
+See INFO.email1 for a email containing some info about this.

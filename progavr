@@ -1,0 +1,20 @@
+#! /bin/sh
+
+PROG_TYPE="-dstk200 -dno-poll"
+
+if [ $# != 2 ] && [ $# != 1  ]; then
+    echo Usage: $0 romfile [eepromfile]
+    exit 1;
+fi
+
+# Program the file
+
+#uisp $PROG_TYPE --erase
+
+uisp $PROG_TYPE --segment=flash --erase --upload --verify if=$1
+
+if [ $2 ]; then
+uisp $PROG_TYPE --segment=eeprom --upload --verify if=$2
+fi
+
+echo Programmed succesfully

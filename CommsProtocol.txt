@@ -1,0 +1,191 @@
+ROBOT MASTER/SLAVE COMMS PROTOCOL
+
+The protocol is designed to make fast and efficient use of the multidrop comms, especially when polling several slaves.
+
+Slaves which might signal a time-critical asynchronous event (such as a switch closure) may be polled more often.
+
+If the master needs to command a particular slave, it may insert the command into the polling sequence at any time.
+
+19,200 bps asynchronous, 7-bit character, even parity, 1 stop bit
+Byte values are sent as two lower-case hex characters, 0..9, a..f (usually represented by hh below).
+x below represents a single printable ASCII character.
+CR below represents the SINGLE carriage return character.
+
+
+MASTER MESSAGES:
+===============
+
+POLLING:
+i	Poll IR slave
+m	Poll base/Motors
+t	Poll speech/Talk slave
+p	Poll IO suPervisor
+v	Poll IO slaVe
+
+Note: All polls are a single character (No trailing CR).
+	The character must not occur within other messages.
+	If the slave has no response, it returns the next higher letter in the alphabet.
+	The slave ID is the UPPER CASE version of its poll letter.
+
+IO PRIVATE MESSAGES:
+
+After a 'p' poll to the IO supervisor, if it has nothing to say to the master, but wishes to send a message to the IO slave, it may send the following message:
+>................CR	when the contents of the message are ignored by the master (until the CR is received).
+
+After a 'v' poll to the IO slave, if it has nothing to say to the master, but wishes to send a message to the IO supervisor, it may send the following message:
+<................CR	when the contents of the message are ignored by the master (until the CR is received).
+
+GENERAL MESSAGES:
+
+The # represents the slave ID which is an upper case letter: I, M, T, P, or V.
+
+#V	Request version number
+#Dx	Request dump where x is:
+		E	EEPROM
+		F	Flash
+		R	Registers
+		S	SRAM
+		
+#Zxaaaadd	 Set memory where
+		x is	E	EEPROM
+			R	Register
+		aaaa is	hex memory/register address
+		dd is	hex data byte
+	There is no response to the set memory command.
+
+
+SLAVE MESSAGES:
+==============
+
+GENERAL REPLIES:
+
+The # represents the slave ID which is an upper case letter: I, M, T, P, or V.
+
+#VMmrf	Version number where
+		M	is major version number digit 0..9
+		m	is minor version number digit 0..9
+		r	is revision number digit 0..9
+		f	is fix number digit 0..9
+
+#Dxaaaadd..ddCR	Memory dump where
+			x is	E	EEPROM
+				F	Flash
+				R	Registers
+				S	SRAM
+			aaaa is	hex memory/register address
+			dd is	hex data byte
+		there can be up to 16 data bytes in one message
+		followed by a CR.  (Max. msg length = 40 characters.)
+#DxCR	(as above) indicates no more data
+
+#Ehhhhhh		Error message where hhhhhh is slave defined
+
+
+BASE/MOTORS SLAVE MESSAGES:
+
+COMMANDS:
+
+BPff	        Set power globals
+                Bits 0-1: Lights (off, low, normal, test)
+                Bits 2-3: Power  (off, low. normal)
+
+BIii            Set intensity of headlights.
+BTff            Set travel globals
+                Bit    0: Set front of robot (set if front is opposite)
+                Bit    1: Switch mode (Set if auto-switching is allowed)
+                Bits 2-3: Travel mode (0 - Turn and Straight, 1 - Circle, 2 - Extreme)
+        	Bit    4: Enable auto-stop
+BH              Halt immediately
+Bxssddmmmmm     Send go message.
+                x       may be either g for go left or G for go right.
+                ss      Speed
+                dd      Degrees
+                mmmm    Millimeters to go
+Bbssmmmm        Reverse
+                ss      Speed
+                mmmm    Millimeters to reverse
+BSss            Override go speed.
+Bxss            Manual motor message.
+                x       may be either l or r. Lowercase for forward, uppercase for reverse.
+
+POLL RESPONSES:
+
+BSsstt          Switchs or bumpers have changed.
+                ss      Bumpers
+                tt      Switches
+BMss            Movement status has changed
+                Bit 0: Set if stopped because go buffer was empty (not because
+                        of bumpers or tilts).
+                Bit 7: Set if reversing otherwise cleared.
+
+
+IR SLAVE MESSAGES:
+
+Poll character from master:	i
+Idle poll reply character:	j
+
+COMMANDS:
+
+ILfr	Set LED mode where f (front LED) and r (rear LED) are the hex digits:
+		0	Always off
+		1	Always on
+		2	Normal: Fashes on when receiving
+		3	Inverse: Flashes off when receiving
+		4	Slow flash
+		5	Fast flash
+	There is no response to the LED mode command.
+
+IP7524		Enter stand-by mode (power off rest of robot)
+IK1396		Kill entire system
+
+POLL RESPONSES:
+
+Ixhh	Character received on IR remote where
+		x is	F	Front
+			R	Rear
+		hh is	IR code 0..38, or FF=repeat, FE=error
+
+IBhh	Battery power level
+IChh	Charging power level
+
+
+SPEECH/TALK SLAVE MESSAGES:
+
+Poll character from master:	t
+Idle poll reply character:	u
+
+COMMANDS:
+
+SThh..CR	Talk command where hh are hex speech codes.
+		There may be up to 16 speech codes in one message. (Max. msg length = 35 characters.)
+		All talk commands are terminated by a CR.
+
+SP              Begin programming flash - see linuxtoavr.
+SRaaaa          Read external flash segment number aaaa.
+SQ              Test all of external flash. Return 'Q' if it is
+                good or error otherwise.
+SD              Debug SPI mode.
+SFxx            Set flags.
+                        Bit 0 - Debug bit
+SGsfffftttt            Generate tone where:
+		s = shape (0=silent, 1=square wave, 2=triangle, 3=sine, etc...)
+		ffff = frequency in Hz
+		tttt = time in msec
+
+POLL RESPONSES:
+
+SFhh	when speaking where
+		hh	is number of free buffer bytes
+
+
+
+PROGRAMMING:
+
+Basically the slave can be in one of several states as shown by this table.
+
+STATES	DESCRIPTION			NEXT STATES
+-----------------------------------------------------------------
+IDLE	Waiting for a command or poll	GETMSG (Get a capital of our ID), IDLE (Respond to poll or ignore message not addressed to this slave)
+GETMSG	Waiting for a message		GETDATA (Receive a valid message that requires data), GETMSG2 (Message is a Dump or set messge), IDLE (Bad message or 1 byte message)
+GETMSG2 Waiting for second byte of msg	GETDATA (Receive a valid second message), IDLE (error)
+GETDATA Waiting for data		GETDATA (Not finished, valid data), IDLE (Finished, invalid data)
