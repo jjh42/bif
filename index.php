@@ -108,7 +108,7 @@ common_start("Welcome to the Bif Site");
 
 <?php
 
-common_end("\$id$");
+common_end("\$Id: index.php,v 1.2 2002/10/30 07:56:11 jhuntnz Exp $");
 
 ?>
 

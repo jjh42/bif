@@ -68,7 +68,7 @@ I'll add more details.
 </p>
 <?php
 
-common_end("\$id$");
+common_end("\$Id: history.php,v 1.2 2002/10/30 07:56:11 jhuntnz Exp $");
 
 ?>
 

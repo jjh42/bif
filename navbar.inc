@@ -7,8 +7,8 @@
 
 require 'counter.inc';
 
-$navnames = array("Home", "Tech Stuff", "History", "Links", "About");
-$navlinks = array("index.php", "tech.php", "history.php", "links.php", "about.php");
+$navnames = array("Home", "Tech Stuff", "History", "Patches", "Links", "About");
+$navlinks = array("index.php", "tech.php", "history.php", "patches.php", "links.php", "about.php");
 
 
 function do_navbar() {

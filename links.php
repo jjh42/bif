@@ -27,6 +27,7 @@ $links = array(
 	array ("Editors", "editors",
 		array (
 			array("http://www.kdevelop.org", "KDevelop is used by one member of Project Bif for almost all his editing because it is really nice."),
+      array("http://kate.kde.org", "Kate is a more general purpose text editor that gets some use as well."),
 		)
 	),
 	array ("Tools", "tools",
@@ -55,6 +56,7 @@ $links = array(
 			array("http://quanta.sourceforge.net", "Quanta Plus is a lot more than an editor and was used for making this site."),
 			array("http://www.mysql.com", "MySQL databases are used for parts of this site."),
 			array("http://www.php.net", "PHP server side scripting is serving you this page."),
+      array("http://www.gimp.org", "The GIMP - used to create some of the graphics on this site."),
 		)
 	),
 );
@@ -99,7 +101,7 @@ foreach ($links as $section)
 
 }
 
-common_end("\$id$");
+common_end("\$Id: links.php,v 1.2 2002/10/30 07:56:11 jhuntnz Exp $");
 
 ?>
 

@@ -19,7 +19,7 @@ This page is not started yet. It is a page in progress.
 
 <?php
 
-common_end("\$id$");
+common_end("\$Id: tech.php,v 1.2 2002/10/30 07:56:11 jhuntnz Exp $");
 
 ?>
 

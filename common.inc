@@ -12,8 +12,8 @@ require ('navbar.inc');
 // Emit generic junk at the beginning
 function common_start ($title,$extraheader = "") {
 	?>
-	
-	
+
+
 
 <!--- This is the start of the common header --->
 
@@ -60,7 +60,7 @@ function common_start ($title,$extraheader = "") {
 	</table>
 
 <hr>
-<a name = "top">
+<a name = "top"> </a>
 
 
 <!--- This is the end of the common header ---->
@@ -80,7 +80,6 @@ function common_end($id) {
 <!--- This is the start of the common footer ---->
 
 
-</a>
 	<br><br><br>
 	<hr>
 	<small>
@@ -89,7 +88,7 @@ function common_end($id) {
 		<a href="#top" >To top of page</a>
 		<br>
 
-		If you are having problems with site please contact the <a href="mailto:jhuntnz@users.sourceforge.net?subject=Problems with bif site">webmaster
+		If you are having problems with site, have found a spelling mistake or just want to moan please contact the <a href="mailto:jhuntnz@users.sourceforge.net?subject=Problems with bif site">webmaster
 			</a>
 		<br>
 		CVS id <?php echo $id ?>

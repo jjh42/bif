@@ -40,7 +40,7 @@ Project Bif is a project to make a robot. You may have heard of robots that do r
 
 <?php
 
-common_end("\$id$");
+common_end("\$Id: about.php,v 1.2 2002/10/30 07:56:11 jhuntnz Exp $");
 
 ?>
 
