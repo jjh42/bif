@@ -42,6 +42,7 @@ packages: <BR>
 <ul>
 <li><a href="http://cook.sourceforge.net">Cook Preprocessor</a></li>
 <li><a href="http://sources.redhat.com/binutils"> GNU Binutils for the AVR</a></li>
+<li><a href="http://khrono.sourceforge.net">Khrono</a> - a KDE Stopwatch Application</li>
 </ul>
 
 See <a href="portage/README"> the README </a> for more info on how to use these ebuilds.
@@ -85,6 +86,6 @@ gives kwrite and kdevelop syntax hightlighting for it as well.
 
 <?
 
-common_end("\$Id: patches.php,v 1.2 2002/10/31 08:56:24 jhuntnz Exp $");
+common_end("\$Id: patches.php,v 1.3 2002/11/06 05:00:57 jhuntnz Exp $");
 
 ?>
