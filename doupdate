@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # Do update for bif site.
-cvs up -dRP > /dev/null
+cvs up -dRP 2&>1 > /dev/null
 
 ./fetch_projlinks
 ./fetch_projnews
