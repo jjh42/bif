@@ -1,15 +1,19 @@
 2002-10-30  Jonathan Hunt <jhuntnz@users.sourceforge.net>
 
-	* about.php: Changed $id$ to $Id: ChangeLog,v 1.4 2002/10/30 07:56:11 jhuntnz Exp $ so it works.
+	* doupdate: First add.
+
+2002-10-30  Jonathan Hunt <jhuntnz@users.sourceforge.net>
+
+	* about.php: Changed $id$ to $Id: ChangeLog,v 1.5 2002/10/30 09:33:52 jhuntnz Exp $ so it works.
 	* common.inc: Change the </a> for top to right at the
 	  top to make it display properly in konqueror.
-	* history.php: Changed $id$ to $Id: ChangeLog,v 1.4 2002/10/30 07:56:11 jhuntnz Exp $ so it works.
-	* index.php: Changed $id$ to $Id: ChangeLog,v 1.4 2002/10/30 07:56:11 jhuntnz Exp $ so it works.
-	* links.php: Changed $id$ to $Id: ChangeLog,v 1.4 2002/10/30 07:56:11 jhuntnz Exp $ so it works.
+	* history.php: Changed $id$ to $Id: ChangeLog,v 1.5 2002/10/30 09:33:52 jhuntnz Exp $ so it works.
+	* index.php: Changed $id$ to $Id: ChangeLog,v 1.5 2002/10/30 09:33:52 jhuntnz Exp $ so it works.
+	* links.php: Changed $id$ to $Id: ChangeLog,v 1.5 2002/10/30 09:33:52 jhuntnz Exp $ so it works.
 		     Added link for kate.
 	* navbar.inc: Added link for patches.php.
 	* patches.php: First add.
-	* tech.php: Changed $id$ to $Id: ChangeLog,v 1.4 2002/10/30 07:56:11 jhuntnz Exp $ so it works.
+	* tech.php: Changed $id$ to $Id: ChangeLog,v 1.5 2002/10/30 09:33:52 jhuntnz Exp $ so it works.
 
 2002-10-28  Jonathan Hunt  <jhuntnz@users.sourceforge.net>
 

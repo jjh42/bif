@@ -91,7 +91,7 @@ function common_end($id) {
 		If you are having problems with site, have found a spelling mistake or just want to moan please contact the <a href="mailto:jhuntnz@users.sourceforge.net?subject=Problems with bif site">webmaster
 			</a>
 		<br>
-		CVS id <?php echo $id ?>
+		CVS <?php echo $id ?>
 	</div>
 	</small>
 	</body>
