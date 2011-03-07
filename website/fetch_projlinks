@@ -1,0 +1,10 @@
+#!/bin/sh
+#
+#     	Fetch project html.
+#
+#       Creates a file called projhtml.cache in your home directory
+#
+
+/usr/bin/wget -q -O ./projhtml.tmp "http://sourceforge.net/export/projhtml.php?group_id=61715&mode=full&no_table=1"
+     > /dev/null
+/bin/mv -f ./projhtml.tmp ./projhtml.cache
